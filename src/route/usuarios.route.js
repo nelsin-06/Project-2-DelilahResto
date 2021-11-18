@@ -1,9 +1,12 @@
-const hallarUsuario = require("../helpers/findUser")
-const usuarioModelo = require("../models/usuario.model")
+//const hallarUsuario = require("../helpers/findUser")
+const usuarioValidation = require("../Schemas_joi/usuarioRegistro.Schema");
+const loginValidation = require("../Schemas_joi/usuarioLogin.Schema");
+const usuarioModelo = require("../models/usuario.model");
 const express = require('express');
 const router = express.Router();
-const middlewareLogin = require("../middlewares/autenticacion.middleware");
-const { esAdmin } = require("../middlewares/esAdmin.middleware");
+//const middlewareLogin = require("../middlewares/autenticacion.middleware");
+//const { esAdmin } = require("../middlewares/esAdmin.middleware");
+const { encryptPassword, matchPassword } = require("../helpers/bcrypt.methods");
 
 /**
  * @swagger
@@ -24,7 +27,7 @@ router.get('/obtenerusuarios', async (req, res) => {
     try {
         res.json( await usuarioModelo.find());
 }   catch (err) {
-        res.json("A OCURRIDO UN ERROR - 500 INTERNAL ERROR")
+        res.status(500).json("A OCURRIDO UN ERROR - 500 INTERNAL ERROR")
         console.log(err)
 }
 });
@@ -54,13 +57,18 @@ router.get('/obtenerusuarios', async (req, res) => {
  *                          
  */
 router.post("/ingresar", async (req, res) => {
-    const { email, password } = req.body;
-    const verificacion = await hallarUsuario(email, password);
-    if(verificacion){
-        res.status(200).json("Inicio de sesion exitoso");
-    } else {
-        res.status(401).json("Inicio de sesion NO EXITOSO");
-    };
+    try {
+        const { email, password } = await loginValidation.validateAsync(req.body);
+        const usuarioDB = await usuarioModelo.findOne({email});
+        const verificacion = await matchPassword(password, usuarioDB.password)
+        if(verificacion){
+            res.status(200).json("Inicio de sesion exitoso");
+        } else {
+            res.status(401).json("Unauthorized");
+        };
+} catch (err) {
+    res.status(401).json("Unauthorized")
+}
 })
 
 /**
@@ -95,21 +103,30 @@ router.post("/ingresar", async (req, res) => {
  *                      
  */                     
 router.post("/registrar", async (req, res) => {
-    const {email, username, password, telefono, direccion} = req.body;
-if (email && username && password && telefono && direccion) {
     try {
+    const { email, username, password, telefono, direccion } = await usuarioValidation.validateAsync(req.body);
+    const verificacion = await usuarioModelo.findOne({"email": email});
+    if (verificacion == null){
         const userNew = await new usuarioModelo ({
-            email, username, password, telefono, direccion
+            email, 
+            username, 
+            password, 
+            telefono, 
+            direccion
         });
-        userNew.password = await userNew.encryptPassword(password);
+        userNew.password = await encryptPassword(password);
         await userNew.save();
-        res.status(201).json(userNew)
-    } catch (err) {
-        console.log(err);
-        res.status(404).json("El email ya se encuentra en nuestro sistema");
-    };
-} else {res.status(404).json("Faltan datos obligatorios")};
+        res.status(201).json(`USUARIO CREADO Username:${userNew.username} Email: ${userNew.email}`);
+    } else {
+        res.status(400).json("El email ya se encuentra registrado");
+    }
+}   catch (err) {
+        if (err.details[0].type == any.only) {
+            res.status(400).json("Las contrasenas no coinciden");
+        } res.status(400).json(err.details[0].message);
+};
 });
+
 /**
  * @swagger
  * tags:
