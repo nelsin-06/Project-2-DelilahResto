@@ -8,8 +8,8 @@ const metoPagoModelo = require("../models/metodospago.models");
 const pedidoModelo = require("../models/pedidos.model");
 const usuarioModelo = require("../models/usuario.model");
 const productoModelo = require("../models/producto.model");
-const middlewaresLogin = require("../middlewares/autenticacion.middleware");
-const { esAdmin } = require("../middlewares/esAdmin.middleware");
+//const middlewaresLogin = require("../middlewares/autenticacion.middleware");
+//const { esAdmin } = require("../middlewares/esAdmin.middleware");
 
 /**
  * @swagger
@@ -57,11 +57,11 @@ const { esAdmin } = require("../middlewares/esAdmin.middleware");
  */
 
 router.post("/realizarpedido", async (req, res) => { //REALIZAR UN PEDIDO (USUARIO LOGUEADO)
-    const usuario = req.auth.user;
+    //const usuario = req.auth.user;
     const {id_producto, cantidad, direccion, id_metodo_pago} = req.body;
     try{
     const datosPago = await metoPagoModelo.findById({"_id": id_metodo_pago})
-    const datosUsuario = await usuarioModelo.findOne({"email": "nelsongallgeo@gmail.com.co"});
+    const datosUsuario = await usuarioModelo.findOne({"email": "neasg0611ads@gmail.com"});
     const datosproducto = await productoModelo.findById({"_id": id_producto});
     const precioTotal = datosproducto.precio * cantidad;
     const nuevoPedido = await new pedidoModelo ({
@@ -98,7 +98,7 @@ router.post("/realizarpedido", async (req, res) => { //REALIZAR UN PEDIDO (USUAR
  *                      schema:
  *                          $ref: '#/components/schemas/obtenermipedido'
  */
-router.get("/mipedido", middlewaresLogin, (req, res) => { //OBTENER MIS PEDIDOS (USUARIO LOGUEADO)
+router.get("/mipedido", (req, res) => { //OBTENER MIS PEDIDOS (USUARIO LOGUEADO)
     const usuario = req.auth.user;
     obtenerMiPedido(usuario)
     res.json(obtenerMiPedido(usuario))
@@ -120,7 +120,7 @@ router.get("/mipedido", middlewaresLogin, (req, res) => { //OBTENER MIS PEDIDOS 
  *                      schema:
  *                          $ref: '#/components/schemas/totalpedidos'
  */
-router.get("/totalpedidos", middlewaresLogin, esAdmin, (req, res) => { //ObBTENER TODOS LOS PEDIDO (ADMIN)
+router.get("/totalpedidos", (req, res) => { //ObBTENER TODOS LOS PEDIDO (ADMIN)
     res.json(pedidoModelo.find());
 });
 

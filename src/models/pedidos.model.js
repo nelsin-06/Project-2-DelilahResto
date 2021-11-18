@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const {datosOrdenSchema, datosUsuarioSchema, datosMetodoPagoSchema} = require("../Schemas/pedido.Schemas");
+const {datosOrdenSchema, datosUsuarioSchema, datosMetodoPagoSchema} = require("../helpers/estandar.Pedido");
 
 const pedidoSchema = new mongoose.Schema({
     "usuario": datosUsuarioSchema,

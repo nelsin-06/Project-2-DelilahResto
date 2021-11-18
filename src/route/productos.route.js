@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const productoModelo = require("../models/producto.model");
 //const { obtenerProducto, editarProducto, eliminarProducto, agregarProducto } = require("../models/producto.model");
-const middlewaresLogin = require("../middlewares/autenticacion.middleware");
-const { esAdmin } = require("../middlewares/esAdmin.middleware");
+//const middlewaresLogin = require("../middlewares/autenticacion.middleware");
+//const { esAdmin } = require("../middlewares/esAdmin.middleware");
 
 /**
  * @swagger

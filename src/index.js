@@ -8,9 +8,9 @@ require("./database");
 const PORT = 3000;
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUI = require('swagger-ui-express');
-const swaggerSpecs = swaggerJsDoc(swaggerOptions);
+// const swaggerSpecs = swaggerJsDoc(swaggerOptions);
 
-app.use("/swagger", swaggerUI.serve, swaggerUI.setup(swaggerSpecs))
+//app.use("/swagger", swaggerUI.serve, swaggerUI.setup(swaggerSpecs))
 
 const rutasUsuarios = require("./route/usuarios.route");
 const rutasProductos = require("./route/productos.route");

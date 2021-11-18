@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { hacerPedidos, variable, obtenerMiPedido, cambiarEstado, cambiarEstadoUser, editarPedido, eliminarProductoDePedido, agregarProductosPedido, todoPedidos} = require("../models/pedidos.model");
-const middlewaresLogin = require("../middlewares/autenticacion.middleware");
-const { esAdmin } = require("../middlewares/esAdmin.middleware");
+// const middlewaresLogin = require("../middlewares/autenticacion.middleware");
+//const { esAdmin } = require("../middlewares/esAdmin.middleware");
 
 /**
  * @swagger
@@ -48,7 +48,7 @@ const { esAdmin } = require("../middlewares/esAdmin.middleware");
  *                          example: El ID de pago no es correcto
  *
  */
-router.post("/realizarpedido", middlewaresLogin, (req, res) => { //Realizar pedido de usuario logueado.
+router.post("/realizarpedido", (req, res) => { //Realizar pedido de usuario logueado.
     const usuario = req.auth.user;
     const { idDepago, direccionDePedido } = req.body;
     const idDeProducto = req.body.pedidos;
@@ -71,7 +71,7 @@ router.post("/realizarpedido", middlewaresLogin, (req, res) => { //Realizar pedi
  *                      schema:
  *                          $ref: '#/components/schemas/obtenermipedido'
  */
-router.get("/mipedido", middlewaresLogin, (req, res) => { //Obtener el pedido de usuario logueado.
+router.get("/mipedido", (req, res) => { //Obtener el pedido de usuario logueado.
     const usuario = req.auth.user;
     obtenerMiPedido(usuario)
     res.json(obtenerMiPedido(usuario))
@@ -93,7 +93,7 @@ router.get("/mipedido", middlewaresLogin, (req, res) => { //Obtener el pedido de
  *                      schema:
  *                          $ref: '#/components/schemas/totalpedidos'
  */
-router.get("/totalpedidos", middlewaresLogin, esAdmin, (req, res) => { //Obtener todos los pedidos (solo admin).
+router.get("/totalpedidos", (req, res) => { //Obtener todos los pedidos (solo admin).
     res.json(todoPedidos());
 });
 
@@ -133,7 +133,7 @@ router.get("/totalpedidos", middlewaresLogin, esAdmin, (req, res) => { //Obtener
  *                          type: string
  *                          example: El ID indicado no corresponde a ningun pedido.
  */
-router.post("/estado/:id", middlewaresLogin, esAdmin, (req, res) => {  //Para cambiar estados de pedido (solo admin).
+router.post("/estado/:id", (req, res) => {  //Para cambiar estados de pedido (solo admin).
     const { id } = req.params;
     const { estado } = req.body;
     res.json(cambiarEstado(id, estado));
@@ -177,7 +177,7 @@ router.post("/estado/:id", middlewaresLogin, esAdmin, (req, res) => {  //Para ca
  *                          type: string
  *                          example: El ID del pedido indicado no existe.
  */
-router.get("/estado/:id", middlewaresLogin, (req, res) => { //Para cambiar estado a de pedido a confirmado.
+router.get("/estado/:id", (req, res) => { //Para cambiar estado a de pedido a confirmado.
     const { id } = req.params;
     res.json(cambiarEstadoUser(id));
 });
@@ -234,7 +234,7 @@ router.get("/estado/:id", middlewaresLogin, (req, res) => { //Para cambiar estad
  *          
  */         
 
-router.put("/editarpedido/:id", middlewaresLogin, (req, res) => { // para editar el producto en nuestro pedido
+router.put("/editarpedido/:id", (req, res) => { // para editar el producto en nuestro pedido
     const { id } = req.params; //id de pedido   
     const {pedidos} = req.body;
     res.json(editarPedido(id, pedidos));
@@ -288,7 +288,7 @@ router.put("/editarpedido/:id", middlewaresLogin, (req, res) => { // para editar
  *  
  *          
  */
-router.delete("/editarpedido/:idPedido", middlewaresLogin, (req, res) => { //para eliminar productos del pedido.
+router.delete("/editarpedido/:idPedido", (req, res) => { //para eliminar productos del pedido.
     const { idPedido } = req.params; // Id del pedido de nuestro usuario 
     const { idproducto } = req.body; // Id del producto que se desea eliminar del pedido de nuestro usuario
     res.json(eliminarProductoDePedido(idPedido, idproducto));

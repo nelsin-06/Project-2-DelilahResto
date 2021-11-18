@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const metoPagoModelo = require("../models/metodospago.models");
 const {obtenerMediosPago, aggMetodo, editarmetodo, eliminarMetodo } = require("../models/metodospago.models");
-const middlewaresLogin = require("../middlewares/autenticacion.middleware");
-const { esAdmin } = require("../middlewares/esAdmin.middleware");
+//const middlewaresLogin = require("../middlewares/autenticacion.middleware");
+//const { esAdmin } = require("../middlewares/esAdmin.middleware");
 
 process.on('unhandledRejection', (reason, p) => {
     console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
