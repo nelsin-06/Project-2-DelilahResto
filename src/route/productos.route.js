@@ -2,8 +2,6 @@ const router = require('express').Router();
 const productoModelo = require('../models/producto.model');
 const validationAggProduct = require('../Schemas_joi/Productos/crearProducto');
 const validationEditProduct = require('../Schemas_joi/Productos/EdicionProducto');
-//const middlewaresLogin = require("../middlewares/autenticacion.middleware");
-//const { esAdmin } = require("../middlewares/esAdmin.middleware");
 
 /**
  * @swagger
