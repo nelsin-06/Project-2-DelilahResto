@@ -24,32 +24,6 @@ router.get("/listaproductos", async (req, res) =>{
 res.json(await productoModelo.find());
 });
 
-
-/*
- router.get("/listaproductos", async (req, res) =>{
-    const ejemplo = ({
-        "nombre": "pruebajejeje22222222",
-        "nombre2": "jajajajajaj"
-    })
-    const prueba = await new productoModelo({
-        "nombre": "2producto22222222",
-        "precio": 9999
-    });
-
-    await prueba.prueba.push(ejemplo);
-    await prueba.save()
-    res.json("nelson jeje")
-});
-
-router.get("/listaproductos2", async (req, res) =>{
-    const prueba = await productoModelo.findById({"_id": "6179f04b4b5acd241c663637"})
-    await prueba.prueba.push({"nombre": "jejeje prueba 2"});
-    console.log(prueba);
-    await prueba.save()
-    res.json("nelson jeje")
-});
-
-*/
 /**
  * @swagger
  * /productos/edicionproductos/{IdDeProducto}:
@@ -154,7 +128,7 @@ router.delete("/eliminarproductos/:id", async (req, res) => { //Eliminar un prod
         } else {res.json(`Se elimino satisfactoriamente el producto ${productDelete.nombre} con el precio de ${productDelete.precio}`)};
     } catch(err) {
         res.status(400).json("El id es invalido del producto a eliminar es invalido")
-        //console.error(`ERROR AL ELIMINAR >>>>>>>>>>>>>>>>>>>>>>>> ${err}`);
+//console.error(`ERROR AL ELIMINAR >>>>>>>>>>>>>>>>>>>>>>>> ${err}`);
     };
 });
 
