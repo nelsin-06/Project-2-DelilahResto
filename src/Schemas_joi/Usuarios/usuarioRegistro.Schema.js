@@ -38,7 +38,7 @@ const usuarioValidation = joi.object().keys({
                         "string.empty": `Numero de telefono es requerido`,
                 }),
         direccion: joi
-                .string()
+                .array()
                 .required()
                 .messages({
                         "string.base": `Se debe ingresar una direccion valida`,

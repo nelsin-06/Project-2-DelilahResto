@@ -24,8 +24,12 @@ const usuarioSchema = new mongoose.Schema ({
         required: true,
     },
     "direccion": {
-        type: String,
+        type: Array,
         required: true,
+    },
+    "estado": {
+        type: Boolean,
+        default: true
     },
 });
 

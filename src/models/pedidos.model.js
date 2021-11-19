@@ -8,12 +8,12 @@ const pedidoSchema = new mongoose.Schema({
         type: Number
     },
     "direccion_pedido": {
-        type: String,
+        type: Object,
         required: true
     },
     "estado_pedido": {
         type: String,
-        default: "PENDIENTE"
+        uppercase: true,
     },
     "metodo_pago": datosMetodoPagoSchema
 });
