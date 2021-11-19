@@ -5,28 +5,28 @@ const usuarioSchema = new mongoose.Schema ({
         type: String,
         unique: true,
         lowercase: true,
-        require: true
+        required: true,
     },
     "username": {
-        require: true,
-        type: String
+        type: String,
+        required: true,
     },
     "password": {
         type: String,
-        require: true
+        required: true,
     },
     "isAdmin": {
         type: Boolean,
-        default: false
+        default: false,
     },
     "telefono": {
         type: Number,
-        require: true
+        required: true,
     },
     "direccion": {
         type: String,
-        require: true
-    }
+        required: true,
+    },
 });
 
 module.exports = mongoose.model("Usuarios", usuarioSchema);

@@ -1,9 +1,9 @@
-//const hallarUsuario = require("../helpers/findUser")
-const usuarioValidation = require("../Schemas_joi/usuarioRegistro.Schema");
-const loginValidation = require("../Schemas_joi/usuarioLogin.Schema");
+const usuarioValidation = require("../Schemas_joi/Usuarios/usuarioRegistro.Schema");
+const loginValidation = require("../Schemas_joi/Usuarios/usuarioLogin.Schema");
 const usuarioModelo = require("../models/usuario.model");
 const express = require('express');
 const router = express.Router();
+const JWT = require("jsonwebtoken");
 //const middlewareLogin = require("../middlewares/autenticacion.middleware");
 //const { esAdmin } = require("../middlewares/esAdmin.middleware");
 const { encryptPassword, matchPassword } = require("../helpers/bcrypt.methods");
@@ -25,11 +25,12 @@ const { encryptPassword, matchPassword } = require("../helpers/bcrypt.methods");
  */
 router.get('/obtenerusuarios', async (req, res) => {
     try {
+        //throw new Error('¡Ups!');
         res.json( await usuarioModelo.find());
 }   catch (err) {
-        res.status(500).json("A OCURRIDO UN ERROR - 500 INTERNAL ERROR")
-        console.log(err)
-}
+        res.status(500).json("A OCURRIDO UN ERROR - 500 INTERNAL ERROR");
+        console.log(err);
+};
 });
 
 /**
@@ -59,14 +60,16 @@ router.get('/obtenerusuarios', async (req, res) => {
 router.post("/ingresar", async (req, res) => {
     try {
         const { email, password } = await loginValidation.validateAsync(req.body);
-        const usuarioDB = await usuarioModelo.findOne({email});
-        const verificacion = await matchPassword(password, usuarioDB.password)
+        const {password: pass, username} = await usuarioModelo.findOne({email});
+        const verificacion = await matchPassword(password, pass);
         if(verificacion){
-            res.status(200).json("Inicio de sesion exitoso");
+            const token = JWT.sign({ username, email }, process.env.PASS);
+            res.status(200).json({token});
         } else {
             res.status(401).json("Unauthorized");
         };
 } catch (err) {
+    console.log(err)
     res.status(401).json("Unauthorized")
 }
 })
@@ -105,13 +108,13 @@ router.post("/ingresar", async (req, res) => {
 router.post("/registrar", async (req, res) => {
     try {
     const { email, username, password, telefono, direccion } = await usuarioValidation.validateAsync(req.body);
-    const verificacion = await usuarioModelo.findOne({"email": email});
+    const verificacion = await usuarioModelo.findOne({email});
     if (verificacion == null){
         const userNew = await new usuarioModelo ({
-            email, 
-            username, 
-            password, 
-            telefono, 
+            email,
+            username,
+            password,
+            telefono,
             direccion
         });
         userNew.password = await encryptPassword(password);
@@ -121,9 +124,13 @@ router.post("/registrar", async (req, res) => {
         res.status(400).json("El email ya se encuentra registrado");
     }
 }   catch (err) {
-        if (err.details[0].type == any.only) {
+        console.log(err)
+        if (err.details == undefined) {
+            res.status(500).json("INTERNAL SERVER_ERROR=500")
+        }
+        else if (err.details[0].type == "any.only") {
             res.status(400).json("Las contrasenas no coinciden");
-        } res.status(400).json(err.details[0].message);
+        } else { res.status(400).json(err.details[0].message)};
 };
 });
 

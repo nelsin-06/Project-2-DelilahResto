@@ -1,16 +1,35 @@
 require('dotenv').config();
 const express = require('express');
+const expressJWT = require("express-jwt");
+const msgErrorjwt = require("./middlewares/msgErrorJWT");
+const helmet = require("helmet");
+
 const app = express();
 app.use(express.json());
 
+const PORT = process.env.PORT || 3020;
+
+app.use(helmet());
+
+app.use(
+    expressJWT({
+        secret: process.env.PASS,
+        algorithms: ['HS256'],
+    }).unless({
+        path: ['/usuarios/ingresar', '/usuarios/obtenerusuarios', '/usuarios/registrar'],
+    }),
+);
+    
+app.use(msgErrorjwt);
+
 require("./database");
 
-const PORT = 3000;
+const swaggerOptions = require("./utils/swaggerOptions");
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUI = require('swagger-ui-express');
-// const swaggerSpecs = swaggerJsDoc(swaggerOptions);
+const swaggerSpecs = swaggerJsDoc(swaggerOptions);
 
-//app.use("/swagger", swaggerUI.serve, swaggerUI.setup(swaggerSpecs))
+app.use("/swagger", swaggerUI.serve, swaggerUI.setup(swaggerSpecs));
 
 const rutasUsuarios = require("./route/usuarios.route");
 const rutasProductos = require("./route/productos.route");
