@@ -1,7 +1,6 @@
-const express = require('express');
-const router = express.Router();
+const router = require('express').Router();
 const productoModelo = require("../models/producto.model");
-//const { obtenerProducto, editarProducto, eliminarProducto, agregarProducto } = require("../models/producto.model");
+const validationAggProduct = require("../Schemas_joi/Productos/crearProducto");
 //const middlewaresLogin = require("../middlewares/autenticacion.middleware");
 //const { esAdmin } = require("../middlewares/esAdmin.middleware");
 
@@ -147,14 +146,15 @@ router.put("/edicionproductos/:id", async (req, res) => { //Actualizar un produc
  *                          example: El ID indicado no corresponde a ningun producto.
  */
 router.delete("/eliminarproductos/:id", async (req, res) => { //Eliminar un producto de la lista
-    const { id } = req.params;
     try {
+        const { id } = req.params;
         const productDelete = await productoModelo.findByIdAndDelete({"_id": id });
         if (productDelete == undefined){
             res.json("No se encontro el producto indicado por id");
-        } res.json(`Se elimino satisfactoriamente el producto ${productDelete.nombre} con el precio de ${productDelete.precio}`)
+        } else {res.json(`Se elimino satisfactoriamente el producto ${productDelete.nombre} con el precio de ${productDelete.precio}`)};
     } catch(err) {
-        console.error(`ERROR AL ELIMINAR >>>>>>>>>>>>>>>>>>>>>>>> ${err}`);
+        res.status(400).json("El id es invalido del producto a eliminar es invalido")
+        //console.error(`ERROR AL ELIMINAR >>>>>>>>>>>>>>>>>>>>>>>> ${err}`);
     };
 });
 
@@ -196,16 +196,24 @@ router.delete("/eliminarproductos/:id", async (req, res) => { //Eliminar un prod
  *          
  */
 router.post("/agregarproductos", async (req, res) => { //Creando un producto nuevo
-    const {nombre, precio} = req.body;
     try {
-        const productNew = await new productoModelo ({
-            nombre, precio
-        });
-        await productNew.save();
-        res.json("el producto " + nombre + " Fue creado exitosamente");
+        const { nombre, precio } = await validationAggProduct.validateAsync(req.body);
+        const productDB = await productoModelo.findOne({nombre});
+        if (productDB == null){
+            const productNew = await new productoModelo ({
+                nombre, 
+                precio,
+            });
+            await productNew.save();
+            res.status(200).json("El producto " + nombre + " Fue creado exitosamente");
+        } else {res.status(400).json("El producto ya se encuentra registrado")};
     } catch (err) {
-        console.log("ERROR AL CREAR PRODUCTO>>>>>>>>>>>>> " + err);
-        res.json("Asegurece de ingresar precio, nombre y que este ultimo no se repita");
+//console.log("ERROR AL CREAR PRODUCTO>>>>>>>>>>>>>" + err);
+        if (err.details == undefined) {
+            res.status(500).json("INTERNAL SERVER_ERROR=500");
+        } else{ 
+            res.status(400).json(err.details[0].message);
+        }
     };
 });
 

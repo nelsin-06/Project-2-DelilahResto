@@ -1,5 +1,4 @@
-const express = require('express');
-const router = express.Router();
+const router = require('express').Router();
 const { hacerPedidos, variable, obtenerMiPedido, cambiarEstado, cambiarEstadoUser, editarPedido, eliminarProductoDePedido, agregarProductosPedido, todoPedidos} = require("../models/pedidos.model");
 // const middlewaresLogin = require("../middlewares/autenticacion.middleware");
 //const { esAdmin } = require("../middlewares/esAdmin.middleware");

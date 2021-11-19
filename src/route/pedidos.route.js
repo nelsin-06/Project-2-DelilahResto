@@ -1,5 +1,4 @@
-const express = require('express');
-const router = express.Router();
+const router = require('express').Router();
 const modificarCantidadProducto = require("../helpers/modificarCantidad");
 const actualizarPrecioTotal = require("../helpers/precioTotal");
 const eliminarProductoDeOrden = require("../helpers/elimiProdtoOrden");
