@@ -1,6 +1,7 @@
 const router = require('express').Router();
-const productoModelo = require("../models/producto.model");
-const validationAggProduct = require("../Schemas_joi/Productos/crearProducto");
+const productoModelo = require('../models/producto.model');
+const validationAggProduct = require('../Schemas_joi/Productos/crearProducto');
+const validationEditProduct = require('../Schemas_joi/Productos/EdicionProducto');
 //const middlewaresLogin = require("../middlewares/autenticacion.middleware");
 //const { esAdmin } = require("../middlewares/esAdmin.middleware");
 
@@ -69,24 +70,17 @@ res.json(await productoModelo.find());
  *                          example: El precio del producto debe ser un numero y el nombre del producto debe ser una string.
  */
 router.put("/edicionproductos/:id", async (req, res) => { //Actualizar un producto ya creado
-    const { id } = req.params;
-    const { nombre, precio } = req.body;
-    if (nombre && precio){
     try {
+    const { id } = req.params;
+    const { nombre, precio } = validationEditProduct.validateAsync(req.body);
         await productoModelo.findByIdAndUpdate(id, {nombre, precio});
         res.json(`Producto actualizado: Nombre: ${nombre}, Precio: ${precio}`);
     } catch(err) {
-        if(err.name == "MongoError"){
-            res.json("Los nombres de los productos no pueden estar duplicados");
-            console.error(`ERROR AL ACTUALIZAR >>>>>>>>>>>>>>>>>>>>>>>> ${err}`);
-        } else if (err.name == "CastError") {
-            res.json("No se encontro el producto indicado por id");
-            console.error(`ERROR AL ACTUALIZAR >>>>>>>>>>>>>>>>>>>>>>>> ${err}`);
-        } else {
-            res.json("EROR INTERNO DEL SERVIDOR")
-            console.error(`ERROR AL ACTUALIZAR >>>>>>>>>>>>>>>>>>>>>>>> ${err}`);}  
+        console.log(err)
+        if (err.details == undefined) {
+            res.status(500).json("INTERNAL SERVER_ERROR=500")
+        } else { res.status(400).json(err.details[0].message)};  
     };
-} else {res.json("Se debe ingresar informacion completa a actualizar del producto: nombre y precio")}
 });
 
 /**
