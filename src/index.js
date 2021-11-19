@@ -10,7 +10,7 @@ app.use(express.json());
 const PORT = process.env.PORT || 3020;
 
 app.use(helmet());
-
+/*
 app.use(
     expressJWT({
         secret: process.env.PASS,
@@ -19,7 +19,8 @@ app.use(
         path: ['/usuarios/ingresar', '/usuarios/obtenerusuarios', '/usuarios/registrar'],
     }),
 );
-    
+*/
+
 app.use(msgErrorjwt);
 
 require("./database");

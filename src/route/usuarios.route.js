@@ -6,8 +6,8 @@ const router = express.Router();
 const JWT = require("jsonwebtoken");
 //const middlewareLogin = require("../middlewares/autenticacion.middleware");
 //const { esAdmin } = require("../middlewares/esAdmin.middleware");
-const { encryptPassword, matchPassword } = require("../helpers/bcrypt.methods");
-
+const { encryptPassword, matchPassword } = require('../helpers/bcrypt.methods');
+const eliminarDireccionUsuario = require('../helpers/eliminarDireccion');
 /**
  * @swagger
  * /usuarios/obtenerusuarios:
@@ -108,6 +108,7 @@ router.post("/ingresar", async (req, res) => {
 router.post("/registrar", async (req, res) => {
     try {
     const { email, username, password, telefono, direccion } = await usuarioValidation.validateAsync(req.body);
+    direccion[0].id = Math.floor((Math.random() * (300 - 100 + 1)) + 100);
     const verificacion = await usuarioModelo.findOne({email});
     if (verificacion == null){
         const userNew = await new usuarioModelo ({
@@ -119,10 +120,10 @@ router.post("/registrar", async (req, res) => {
         });
         userNew.password = await encryptPassword(password);
         await userNew.save();
-        res.status(201).json(`USUARIO CREADO Username:${userNew.username} Email: ${userNew.email}`);
+        res.status(201).json(`USUARIO CREADO Username: ${userNew.username} Email: ${userNew.email}`);
     } else {
         res.status(400).json("El email ya se encuentra registrado");
-    }
+    };
 }   catch (err) {
         console.log(err)
         if (err.details == undefined) {
@@ -132,6 +133,40 @@ router.post("/registrar", async (req, res) => {
             res.status(400).json("Las contrasenas no coinciden");
         } else { res.status(400).json(err.details[0].message)};
 };
+});
+
+
+
+router.post("/aggdireccion/:id", async (req, res) => {
+    try{
+    const {id: _id} = req.params;
+    const nuevaDireccion = req.body;
+    const user = await usuarioModelo.findById({_id});
+    nuevaDireccion.id = Math.floor((Math.random() * (300 - 100 + 1)) + 100);
+    user.direccion.push(nuevaDireccion);
+    await user.save();
+    res.json(nuevaDireccion);
+} catch (err){
+    console.log(err)
+    res.status(500).json("INTERNAL SERVER ERROR_500")
+}
+});
+
+router.delete("/deldireccion/:id", async (req, res) => {
+    try {
+        const { id: _id } = req.params;
+        const { id } = req.body;
+        const user = await usuarioModelo.findById({_id});
+        const verificacion = eliminarDireccionUsuario(user.direccion, id);
+        if (verificacion != false){
+            await user.save();
+            res.json("Direccion Eliminada");
+        } else {
+            res.json("No hallamos el id en la lista de direcciones");
+        };
+    } catch (err) {
+        res.json("INTERNAL SERVER ERR0R_500");
+    };
 });
 
 /**

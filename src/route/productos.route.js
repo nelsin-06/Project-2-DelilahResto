@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const productoModelo = require('../models/producto.model');
-const validationAggProduct = require('../Schemas_joi/Productos/crearProducto');
-const validationEditProduct = require('../Schemas_joi/Productos/EdicionProducto');
+const validationProduct = require('../Schemas_joi/Productos/producto.Schema');
+//const validationEditProduct = require('../Schemas_joi/Productos/EdicionProducto');
 
 /**
  * @swagger
@@ -69,15 +69,15 @@ res.json(await productoModelo.find());
  */
 router.put("/edicionproductos/:id", async (req, res) => { //Actualizar un producto ya creado
     try {
-    const { id } = req.params;
-    const { nombre, precio } = validationEditProduct.validateAsync(req.body);
-        await productoModelo.findByIdAndUpdate(id, {nombre, precio});
+    const { id:_id } = req.params;
+    const { nombre, precio } = await validationProduct.validateAsync(req.body);
+        await productoModelo.findByIdAndUpdate(_id, {nombre, precio});
         res.json(`Producto actualizado: Nombre: ${nombre}, Precio: ${precio}`);
     } catch(err) {
         console.log(err)
         if (err.details == undefined) {
             res.status(500).json("INTERNAL SERVER_ERROR=500")
-        } else { res.status(400).json(err.details[0].message)};  
+        } else { res.status(400).json(err.details[0].message)};
     };
 });
 
@@ -113,11 +113,11 @@ router.put("/edicionproductos/:id", async (req, res) => { //Actualizar un produc
  */
 router.delete("/eliminarproductos/:id", async (req, res) => { //Eliminar un producto de la lista
     try {
-        const { id } = req.params;
-        const productDelete = await productoModelo.findByIdAndDelete({"_id": id });
-        if (productDelete == undefined){
+        const { id:_id } = req.params;
+        const {nombre, precio} = await productoModelo.findByIdAndDelete({ _id });
+        if (nombre == undefined){
             res.json("No se encontro el producto indicado por id");
-        } else {res.json(`Se elimino satisfactoriamente el producto ${productDelete.nombre} con el precio de ${productDelete.precio}`)};
+        } else {res.json(`Se elimino satisfactoriamente el producto ${nombre} con el precio de ${precio}`)};
     } catch(err) {
         res.status(400).json("El id es invalido del producto a eliminar es invalido")
 //console.error(`ERROR AL ELIMINAR >>>>>>>>>>>>>>>>>>>>>>>> ${err}`);
@@ -163,7 +163,7 @@ router.delete("/eliminarproductos/:id", async (req, res) => { //Eliminar un prod
  */
 router.post("/agregarproductos", async (req, res) => { //Creando un producto nuevo
     try {
-        const { nombre, precio } = await validationAggProduct.validateAsync(req.body);
+        const { nombre, precio } = await validationProduct.validateAsync(req.body);
         const productDB = await productoModelo.findOne({nombre});
         if (productDB == null){
             const productNew = await new productoModelo ({

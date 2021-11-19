@@ -1,12 +1,16 @@
 const router = require('express').Router();
+const pedidoValidation = require("../Schemas_joi/pedidos/pedidosCrear.Schema");
+const pedidoEditValidation = require('../Schemas_joi/pedidos/pedidoEdit.Schemas');
+const pedidoDelValidacion = require('../Schemas_joi/pedidos/pedidoDeleProdc.Schema');
 const modificarCantidadProducto = require("../helpers/modificarCantidad");
 const actualizarPrecioTotal = require("../helpers/precioTotal");
 const eliminarProductoDeOrden = require("../helpers/elimiProdtoOrden");
 const existeProductoEnLaOrden = require("../helpers/existeElProductoEnLaOrden");
-const metoPagoModelo = require("../models/metodospago.models");
-const pedidoModelo = require("../models/pedidos.model");
-const usuarioModelo = require("../models/usuario.model");
-const productoModelo = require("../models/producto.model");
+const hallarDireccionUser = require('../helpers/hallarDireccion');
+const metoPagoModelo = require('../models/metodospago.models');
+const pedidoModelo = require('../models/pedidos.model');
+const usuarioModelo = require('../models/usuario.model');
+const productoModelo = require('../models/producto.model');
 //const middlewaresLogin = require("../middlewares/autenticacion.middleware");
 //const { esAdmin } = require("../middlewares/esAdmin.middleware");
 
@@ -56,12 +60,29 @@ const productoModelo = require("../models/producto.model");
  */
 
 router.post("/realizarpedido", async (req, res) => { //REALIZAR UN PEDIDO (USUARIO LOGUEADO)
-    //const usuario = req.auth.user;
-    const {id_producto, cantidad, direccion, id_metodo_pago} = req.body;
     try{
-    const datosPago = await metoPagoModelo.findById({"_id": id_metodo_pago})
-    const datosUsuario = await usuarioModelo.findOne({"email": "neasg0611ads@gmail.com"});
+    //const usuario = req.auth.user;
+    const {id_producto, cantidad, id_direccion, id_metodo_pago} = await pedidoValidation.validateAsync(req.body);
+    const datosPago = await metoPagoModelo.findById({"_id": id_metodo_pago});
+    if (datosPago == null){
+        res.status(400).json("No hallamos el metodo de pago");
+    } 
+    else {
+    const datosUsuario = await usuarioModelo.findOne({"email": "11correoprueba4@gmail.com"});
+    if (datosUsuario == null) {
+        res.status(400).json("No hallamos el usuario");
+    } 
+    else {
+    const direccionReal = hallarDireccionUser(datosUsuario.direccion, id_direccion);
+    if (direccionReal == false){
+        res.status(400).json("No hallamos la direccion");
+    } 
+    else {
     const datosproducto = await productoModelo.findById({"_id": id_producto});
+    if (datosproducto == null) {
+        res.status(400).json("No hallamos el producto");
+    } 
+    else {
     const precioTotal = datosproducto.precio * cantidad;
     const nuevoPedido = await new pedidoModelo ({
         "usuario": datosUsuario,
@@ -72,13 +93,18 @@ router.post("/realizarpedido", async (req, res) => { //REALIZAR UN PEDIDO (USUAR
             "cantidad": cantidad
         },
         "precio_total": precioTotal,
-        "direccion_pedido": direccion,
+        "direccion_pedido": direccionReal,
         "metodo_pago": datosPago
     });
     await nuevoPedido.save()
     res.json(nuevoPedido);
+}}}};
     } catch (err) {
-        console.log(err)
+        if (err.details == undefined){
+            res.json("INTERNAL ERRRO_500")
+        } else {
+            res.json(err.details[0].message)
+        }
     };
 });
 /**
@@ -119,8 +145,8 @@ router.get("/mipedido", (req, res) => { //OBTENER MIS PEDIDOS (USUARIO LOGUEADO)
  *                      schema:
  *                          $ref: '#/components/schemas/totalpedidos'
  */
-router.get("/totalpedidos", (req, res) => { //ObBTENER TODOS LOS PEDIDO (ADMIN)
-    res.json(pedidoModelo.find());
+router.get("/totalpedidos", async (req, res) => { //ObBTENER TODOS LOS PEDIDO (ADMIN)
+    res.json(await pedidoModelo.find());
 });
 
 /**
@@ -159,18 +185,23 @@ router.get("/totalpedidos", (req, res) => { //ObBTENER TODOS LOS PEDIDO (ADMIN)
  *                          type: string
  *                          example: El ID indicado no corresponde a ningun pedido.
  */
+//pendiente, confirmado, en preparacion, entregado, cerrado
 router.post("/estado/:idpedido", async (req, res) => {  //CAMBIAR EL ESTADO DEL PEDIDO (ADMIN).
-    const { idpedido } = req.params;
-    const { estado } = req.body;
     try {
-    const pedido = await pedidoModelo.findById({"_id": idpedido});
-    pedido.estado_pedido = estado;
-    await pedido.save()
-    res.json(`EL ESTADO DEL PEDIDO A CAMBIADO A ${estado}`);
+        const { idpedido: _id } = req.params;
+        const { estado } = req.body;
+        if (estado == "PENDIENTE" || estado == "CONFIRMADO" || estado == "EN PREPARACION" || estado == "ENTREGADO" || estado == "CERRADO"){
+            const pedido = await pedidoModelo.findById({_id});
+            pedido.estado_pedido = estado;
+            await pedido.save()
+            res.json(`El estado del pedido cambio a: ${estado}`);
+        } else {
+            res.status(400).json("Los estados de pedido validos son: CONFIRMADO, PENDIENTE, EN PREPARACION, ENTREGADO, CERRADO");
+        }
     } catch (err) {
         console.log(err)
-        res.json("NO SE HALLO EL PEDIDO")
-    }
+        res.json("No se hallo el pedido");
+    };
 });
 /**
  * @swagger
@@ -211,15 +242,14 @@ router.post("/estado/:idpedido", async (req, res) => {  //CAMBIAR EL ESTADO DEL 
  *                          example: El ID del pedido indicado no existe.
  */
 router.get("/estado/:idpedido", async (req, res) => { //CAMBIAR ESTADO DEL PEDIDO A CONFIRMADO.
-    const { idpedido } = req.params;
     try {
-        const pedido = await pedidoModelo.findById({"_id": idpedido});
+    const { idpedido: _id } = req.params;
+        const pedido = await pedidoModelo.findById({_id});
         pedido.estado_pedido = "CONFIRMADO";
         pedido.save();
-        res.json("EL ESTADO DEL PEDIDO PASO A CONFIRMADO");
+        res.status(201).json("El estado del pedido paso a CONFIRMADO");
     } catch (err) {
-        console.log(err)
-        res.json("NO SE HALLO EL PEDIDO")
+        res.status(400).json("No se hallo el pedido")
     };
 });
 
@@ -276,21 +306,30 @@ router.get("/estado/:idpedido", async (req, res) => { //CAMBIAR ESTADO DEL PEDID
  */         
 
 router.put("/editarpedido/:idpedido", async (req, res) => { // MODIFICAR LA CANTIDAD DE UN PRODUCTO EN NUESTRO PEDIDO
-    const { idpedido } = req.params;
-    const { idproducto, cantidadproducto } = req.body;
     try {
-    const pedido = await pedidoModelo.findById({"_id": idpedido});
-    const validacion = modificarCantidadProducto(pedido ,idproducto, cantidadproducto);
+    const { idpedido: _id } = req.params;
+    const { idproducto, cantidadproducto } = await pedidoEditValidation.validateAsync(req.body);
+    const pedido = await pedidoModelo.findById({_id});
+    if (pedido == null) {
+        res.status(400).json("Ingrese un id de pedido valido")
+    } else {
+    const validacion = modificarCantidadProducto(pedido, idproducto, cantidadproducto);
     if (validacion == false){
-        res.json("NO SE HALLO EL PRODUCTO EN EL PEDIDO")
+        res.status(400).json("No se hallo el producto en nuestro pedido");
     } else {
         pedido.save()
-        res.json("CANTIDAD DEL PRODUCTO MODIFICADA")
-    }
+        res.status(201).json("Cantidad de producto modificada");
+    };
+}
     } catch (err) {
-        console.log(err);
-        res.json("ERROR 505_INTERNALERROO")
-    }
+        if (err.name == "CastError") {
+            res.status(400).json("Ingrese un id de pedido valido");
+        } else if (err.details == undefined) {
+            res.status(500).json("INTERNAL SERVER_ERROR=500");
+        } else{ 
+            res.status(400).json(err.details[0].message);
+        };
+    };
 });
 
 /**
@@ -342,28 +381,28 @@ router.put("/editarpedido/:idpedido", async (req, res) => { // MODIFICAR LA CANT
  *          
  */
  router.delete("/editarpedido/:idpedido", async (req, res) => { //ELIMINAR PRODUCTOS DE UN PEDIDO.
-    const { idpedido } = req.params;
-    const { idproducto } = req.body; 
-    if (idproducto){
-        try {
-            const pedido = await pedidoModelo.findById({"_id": idpedido});
-            const resultado = eliminarProductoDeOrden(pedido.orden, idproducto);
-            if (resultado == false ){
-                res.json("NO ENCONTRAMOS EL PRODUCTO EN EL PEDIDO")
-            } else {
+    try {
+        const { idpedido } = req.params;
+        const { idproducto } = pedidoDelValidacion.validateAsync(req.body);
+        const pedido = await pedidoModelo.findById({"_id": idpedido});
+        const resultado = eliminarProductoDeOrden(pedido.orden, idproducto);
+        if (resultado == false ){
+                res.json('No hallamos el producto en el pedido');
+        } else {
             actualizarPrecioTotal(pedido);
             await pedido.save();
-            res.json("PRODUCTO ELIMINADO CORRECTAMENTE");
+            res.json("Producto eliminado correctamente");
         };
-        } catch (err) { 
-            console.log(err.name)
-            if (err.name == "CastError"){
-                res.json("NO HALLAMOS EL PEDIDO")
-            } else {
-                res.json("ERROR SERVER=500_ERROR_INTERNO")
-            }
-    }} else {res.json("SE DEBE INGRESAR EL ID DEL PRODUCTO A ELIMINAR")};
-});
+    } catch (err) { 
+        if (err.name == "CastError") {
+            res.status(400).json("Ingrese un id de pedido valido");
+        } else if (err.details == undefined) {
+            res.status(500).json("INTERNAL SERVER_ERROR=500");
+        } else{ 
+            res.status(400).json(err.details[0].message);
+        };
+}});
+
 /**
  * @swagger
  * /pedidos/editarpedido/{IdDepedido}:
@@ -422,16 +461,18 @@ router.put("/editarpedido/:idpedido", async (req, res) => { // MODIFICAR LA CANT
  *
  */
 router.post("/editarpedido/:idPedido", async (req, res) => { //AGREGAR PRODUCTOS NUEVOS A PEDIDO.
-    const { idPedido } = req.params;
-    const { idproducto, cantidad } = req.body;
-    if (idproducto, cantidad) {
     try {
-        const pedido = await pedidoModelo.findById({"_id": idPedido});
-        const producto = await productoModelo.findById({"_id": idproducto});
+    const { idPedido: _id } = req.params;
+    const { idproducto, cantidadproducto: cantidad } = await pedidoEditValidation.validateAsync(req.body);
+        const pedido = await pedidoModelo.findById({_id});
+        const producto = await productoModelo.findById({"_id": idproducto})
+        if(producto == null){
+            res.status(400).json("No hallamos el producto en el pedido");
+        } else {
         const validacion = existeProductoEnLaOrden(pedido, producto.nombre, cantidad);
         if (validacion !== false){
             await pedido.save()
-            res.json("EL PRODUCTO YA SE ENCUENTRA EN NUESTRO PEDIDO, CANTIDAD AUMENTADA CORRECTAMENTE")
+            res.json("El producto ya se encuentra en el pedido, cantidad aumentada correctamente");
         } else { 
         pedido.precio_total += producto.precio * cantidad;
         const objProducto = ({
@@ -443,17 +484,17 @@ router.post("/editarpedido/:idPedido", async (req, res) => { //AGREGAR PRODUCTOS
         pedido.orden.push(objProducto);
         actualizarPrecioTotal(pedido);
         await pedido.save();
-        res.json("PRODUCTO AGREGADO CORRECTAMENTE");
-        };
+        res.json("Producto agregado correctamente al pedido");
+        };};
     } catch (err) {
-        console.log(err);
-        if (err.name == "TypeError") {
-            res.json("ASEGURESE QUE EL ID DEL PEDIDO Y PRODUCTO SEAN VALIDOS")
-        } else {
-            res.json("ERROR SERVER=500_ERROR_INTERNO");
-        }
+        if (err.name == "CastError") {
+            res.status(400).json("Ingrese un id de pedido valido");
+        } else if (err.details == undefined) {
+            res.status(500).json("INTERNAL SERVER_ERROR=500");
+        } else{ 
+            res.status(400).json(err.details[0].message);
+        };
     };
-} else { res.json("SE DEBE INGRESAR EL IDPRODUCTO Y LA CANTIDAD A AGREGAR") }
 });
 /**
  * @swagger
