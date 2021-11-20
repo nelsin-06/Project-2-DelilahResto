@@ -104,9 +104,9 @@ router.post("/realizarpedido", estadoCerrado, async (req, res) => { //REALIZAR U
     } catch (err) {
         console.log(err)
         if (err.details == undefined){
-            res.json("INTERNAL ERRRO_500")
+            res.status(500).json("INTERNAL ERRRO_500")
         } else {
-            res.json(err.details[0].message)
+            res.status(400).json(err.details[0].message);           
         }
     };
 });

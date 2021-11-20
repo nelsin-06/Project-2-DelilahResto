@@ -1,8 +1,7 @@
 const router = require('express').Router();
 const metoPagoModelo = require("../models/metodospago.models");
-const {obtenerMediosPago, aggMetodo, editarmetodo, eliminarMetodo } = require("../models/metodospago.models");
-//cosnst middlewaresLogin = require("../middlewares/autenticacion.middleware");
-//const { esAdmin } = require("../middlewares/esAdmin.middleware");
+const metodoPagoValidacion = require('../Schemas_joi/metodosPago/metodoPago.Schema');
+const esAdmin = require('../middlewares/esAdmin');
 
 /**
  * @swagger
@@ -53,19 +52,25 @@ router.get("/metodosdepago", async (req, res) => {
  *                          example: Este metodo de pago ya existe.
  */
 router.post("/agremetodopago", async (req, res) => {
-    const { medio } = req.body;
-    if (medio){
-        try {
-            const metNew = await new metoPagoModelo({
-                medio
-            });
+    try {
+    const { medio } = await metodoPagoValidacion.validateAsync(req.body);
+    const verificacion = await metoPagoModelo.findOne({medio});
+    if (verificacion == null) {
+        const metNew = await new metoPagoModelo({
+            medio
+        });
         await metNew.save()
-        res.json(metNew)
-        } catch (err) {
-            console.log(`ERROR AL AGREGAR METODO DE PAGO >>>>>>>>>>>>>>>>>>>> ${err}`);
-            res.json("El metodo de pago ya existe, los metodos de pago deben ser unicos")
-        }
-    } else (res.json("Debe ingresar un metodo de pago"));
+        res.status(201).json(`Se creo el metodo de pago ${medio} exitosamente`)
+    } else {
+        res.status(400).json('El metodo de pago ya existe');
+    };
+    } catch (err) {
+            if (err.details == undefined) {
+                res.status(500).json('INTERNAL SEVER_ERROR=500');
+            } else {
+                res.status(400).json(res.json(err.details[0].message));
+            }
+        };
 });
 
 /**
@@ -107,24 +112,25 @@ router.post("/agremetodopago", async (req, res) => {
  */
 
 router.put("/editarmetodo/:id", async (req, res) => {
-    const { id } = req.params;
-    const { medio } = req.body;
-    if (medio) {
-        try {
-            await metoPagoModelo.findById(id, medio);
-            res.json(`Se actualizo correctamente el medio de pago a ${medio}`)
-        } catch(err) {
-        if(err.name == "MongoError"){
-            res.json("Los nombres de los medios de pago no pueden estar duplicados");
-            console.error(`ERROR AL ACTUALIZAR >>>>>>>>>>>>>>>>>>>>>>>> ${err}`);
-        } else if (err.name == "CastError") {
-            res.json("No se encontro el producto indicado por id");
-            console.error(`ERROR AL ACTUALIZAR >>>>>>>>>>>>>>>>>>>>>>>> ${err}`);
+    try {
+    const { id: _id } = req.params;
+    const { medio } = await metodoPagoValidacion.validateAsync(req.body);
+    const metPago = await metoPagoModelo.findById({_id});
+    if (metPago == null) {
+        res.status(400).json('Id de metodo de pago invalido');
+    } else {
+    const resultado = await metoPagoModelo.findByIdAndUpdate({_id}, {"medio": medio});
+    res.json(`Se actualizo correctamente el medio de pago a ${medio}`)
+    };    
+    } catch (err) {
+        if (err.name == 'CastError') {
+            res.json('Id de metodo de pago invalido')
+        } else if (err.codeName == 'DuplicateKey') {
+            res.status(400).json("El metodo de pago ya existe");
         } else {
-            res.json("EROR INTERNO DEL SERVIDOR")
-            console.error(`ERROR AL ACTUALIZAR >>>>>>>>>>>>>>>>>>>>>>>> ${err}`);}
+            res.status(201).json(res.json(err.details[0].message));
         }
-    } else {res.json("Se debe ingresar el medio de pago actualizado")};
+    }
 });
 
 /**
@@ -158,16 +164,23 @@ router.put("/editarmetodo/:id", async (req, res) => {
  * 
  */
 router.delete("/eliminarmetodo/:id", async (req, res) => {
-    const { id } = req.params;
     try {
-        const metDelete = await metoPagoModelo.findByIdAndDelete({"_id": id});
-        if (metDelete == undefined) {
-            res.json("No se encontro el metodo de pago indicado por id");
-        } res.json(`Se elimino satisfactoriamente el metodo de pago ${metDelete.medio}`);
-    } catch (err) {
-        console.error(`ERROR AL ELIMINAR METODO DE PAGO >>>>>>>>>>>>>> ${err}`);
-        res.json("No se encontro el metodo de pago indicado por id");
-    };
+        const { id: _id } = req.params;
+        const metPago = await metoPagoModelo.findOne({_id});
+        console.log(metPago)
+        if (metPago == null) {
+            res.status(400).json('Id de metodo de pago invalido')
+        } else {
+            const resultado = await metoPagoModelo.findByIdAndDelete({_id});
+            res.json(`Se elimino correctamente el metodo de pago ${metPago.medio}`)
+            };
+            } catch (err) {
+                if (err.name == 'CastError') {
+                    res.json('Id de metodo de pago invalido')
+                } else {
+                    res.status(400).json('INTERNAL SERVER_ERROR=500');
+                };
+            };
 });
 
 /**
