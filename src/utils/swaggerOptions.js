@@ -3,9 +3,9 @@ const swaggerOptions = {
     definition: {
         openapi : "3.0.0",
         info: {
-            title: "Mi primera API - SPRINT PROJECT 1",
+            title: "API - SPRINT PROJECT 2",
             version: "1.0.0",
-            description: "SPRINT PROJECT 1 - ACAMICA"
+            description: "SPRINT PROJECT 2 - ACAMICA"
         },
         servers: [
             {
@@ -15,19 +15,20 @@ const swaggerOptions = {
         ],
         components: {
             securitySchemes: {
-                basicAuth: {
+                BearerAuth: {
                     type: "http",
-                    scheme: "basic"
+                    scheme: "bearer",
+                    bearerFormat: "JWT",
                 }
             }
         },
         security: [
             {
-                basicAuth: []
+                bearerAuth: []
             }
         ]
     },
-    apis: ["../src/route/*.js"]
+    apis: ["./src/route/*.js"]
 };
 
 module.exports = swaggerOptions;
