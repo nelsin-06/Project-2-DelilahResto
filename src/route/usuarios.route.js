@@ -4,10 +4,10 @@ const usuarioModelo = require("../models/usuario.model");
 const express = require('express');
 const router = express.Router();
 const JWT = require("jsonwebtoken");
-//const middlewareLogin = require("../middlewares/autenticacion.middleware");
-//const { esAdmin } = require("../middlewares/esAdmin.middleware");
+const esAdmin = require('../middlewares/esAdmin');
 const { encryptPassword, matchPassword } = require('../helpers/bcrypt.methods');
 const eliminarDireccionUsuario = require('../helpers/eliminarDireccion');
+
 /**
  * @swagger
  * /usuarios/obtenerusuarios:
@@ -23,9 +23,8 @@ const eliminarDireccionUsuario = require('../helpers/eliminarDireccion');
  *                      schema:
  *                          $ref: '#/components/schemas/obtenerusuarios'
  */
-router.get('/obtenerusuarios', async (req, res) => {
+router.get('/obtenerusuarios', esAdmin, async (req, res) => {
     try {
-        //throw new Error('¡Ups!');
         res.json( await usuarioModelo.find());
 }   catch (err) {
         res.status(500).json("A OCURRIDO UN ERROR - 500 INTERNAL ERROR");
@@ -74,6 +73,16 @@ router.post("/ingresar", async (req, res) => {
 }
 })
 
+router.get('/micuenta', async (req, res) => {
+    try {
+        const { email } = req.user;
+        res.status(200).json(await usuarioModelo.find({email}));
+}   catch (err) {
+        res.status(500).json("A OCURRIDO UN ERROR - 500 INTERNAL ERROR");
+        console.log(err);
+};
+})
+
 /**
  * @swagger
  * /usuarios/registrar:
@@ -97,7 +106,7 @@ router.post("/ingresar", async (req, res) => {
  *                          type: string
  *                          example: Usuario creado exitosamente.
  *          200:
- *              description: El correo diligenciado ua existe en nuestro sistema
+ *              description: El correo diligenciado ya existe en nuestro sistema
  *              content:
  *                  text/plain:
  *                      schema:

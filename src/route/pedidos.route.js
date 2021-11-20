@@ -11,6 +11,8 @@ const metoPagoModelo = require('../models/metodospago.models');
 const pedidoModelo = require('../models/pedidos.model');
 const usuarioModelo = require('../models/usuario.model');
 const productoModelo = require('../models/producto.model');
+const estadoCerrado = require('../middlewares/estadoCerrado');
+const esAdmin = require('../middlewares/esAdmin');
 //const middlewaresLogin = require("../middlewares/autenticacion.middleware");
 //const { esAdmin } = require("../middlewares/esAdmin.middleware");
 
@@ -59,16 +61,16 @@ const productoModelo = require('../models/producto.model');
  *
  */
 
-router.post("/realizarpedido", async (req, res) => { //REALIZAR UN PEDIDO (USUARIO LOGUEADO)
+router.post("/realizarpedido", estadoCerrado, async (req, res) => { //REALIZAR UN PEDIDO (USUARIO LOGUEADO)
     try{
-    //const usuario = req.auth.user;
+    const { email } = req.user;
     const {id_producto, cantidad, id_direccion, id_metodo_pago} = await pedidoValidation.validateAsync(req.body);
     const datosPago = await metoPagoModelo.findById({"_id": id_metodo_pago});
     if (datosPago == null){
         res.status(400).json("No hallamos el metodo de pago");
     } 
     else {
-    const datosUsuario = await usuarioModelo.findOne({"email": "11correoprueba4@gmail.com"});
+    const datosUsuario = await usuarioModelo.findOne({email});
     if (datosUsuario == null) {
         res.status(400).json("No hallamos el usuario");
     } 
@@ -78,18 +80,18 @@ router.post("/realizarpedido", async (req, res) => { //REALIZAR UN PEDIDO (USUAR
         res.status(400).json("No hallamos la direccion");
     } 
     else {
-    const datosproducto = await productoModelo.findById({"_id": id_producto});
-    if (datosproducto == null) {
+    const {_id, nombre, precio} = await productoModelo.findById({"_id": id_producto});
+    if (nombre == null) {
         res.status(400).json("No hallamos el producto");
     } 
     else {
-    const precioTotal = datosproducto.precio * cantidad;
+    const precioTotal = precio * cantidad;
     const nuevoPedido = await new pedidoModelo ({
         "usuario": datosUsuario,
         "orden": {
-            "_id": datosproducto._id,
-            "nombre": datosproducto.nombre,
-            "precio": datosproducto.precio,
+            "_id": _id,
+            "nombre": nombre,
+            "precio": precio,
             "cantidad": cantidad
         },
         "precio_total": precioTotal,
@@ -100,6 +102,7 @@ router.post("/realizarpedido", async (req, res) => { //REALIZAR UN PEDIDO (USUAR
     res.json(nuevoPedido);
 }}}};
     } catch (err) {
+        console.log(err)
         if (err.details == undefined){
             res.json("INTERNAL ERRRO_500")
         } else {
@@ -123,10 +126,9 @@ router.post("/realizarpedido", async (req, res) => { //REALIZAR UN PEDIDO (USUAR
  *                      schema:
  *                          $ref: '#/components/schemas/obtenermipedido'
  */
-router.get("/mipedido", (req, res) => { //OBTENER MIS PEDIDOS (USUARIO LOGUEADO)
-    const usuario = req.auth.user;
-    obtenerMiPedido(usuario)
-    res.json(obtenerMiPedido(usuario))
+router.get("/mipedido", async (req, res) => { //OBTENER MIS PEDIDOS (USUARIO LOGUEADO)
+    const { email } = req.user;
+    res.status(200).json(await pedidoModelo.find({"usuario.email": email}));
 });
 
 /**
@@ -145,7 +147,7 @@ router.get("/mipedido", (req, res) => { //OBTENER MIS PEDIDOS (USUARIO LOGUEADO)
  *                      schema:
  *                          $ref: '#/components/schemas/totalpedidos'
  */
-router.get("/totalpedidos", async (req, res) => { //ObBTENER TODOS LOS PEDIDO (ADMIN)
+router.get("/totalpedidos", esAdmin ,async (req, res) => { //OBTENER TODOS LOS PEDIDO (ADMIN)
     res.json(await pedidoModelo.find());
 });
 
@@ -186,7 +188,7 @@ router.get("/totalpedidos", async (req, res) => { //ObBTENER TODOS LOS PEDIDO (A
  *                          example: El ID indicado no corresponde a ningun pedido.
  */
 //pendiente, confirmado, en preparacion, entregado, cerrado
-router.post("/estado/:idpedido", async (req, res) => {  //CAMBIAR EL ESTADO DEL PEDIDO (ADMIN).
+router.post("/estado/:idpedido", esAdmin,async (req, res) => {  //CAMBIAR EL ESTADO DEL PEDIDO (ADMIN).
     try {
         const { idpedido: _id } = req.params;
         const { estado } = req.body;
@@ -200,7 +202,7 @@ router.post("/estado/:idpedido", async (req, res) => {  //CAMBIAR EL ESTADO DEL 
         }
     } catch (err) {
         console.log(err)
-        res.json("No se hallo el pedido");
+        res.json("Id de pedido invalido");
     };
 });
 /**

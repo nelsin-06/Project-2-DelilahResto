@@ -13,6 +13,7 @@ const pedidoSchema = new mongoose.Schema({
     },
     "estado_pedido": {
         type: String,
+        default: "PENDIENTE",
         uppercase: true,
     },
     "metodo_pago": datosMetodoPagoSchema
