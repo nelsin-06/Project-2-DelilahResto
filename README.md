@@ -1,4 +1,4 @@
-# README DESACTUALIZADO IGNORAR
+# Proyecto en desarrollo -- README DESACTUALIZADO IGNORAR
 # ACAMICA SRPINT-PROJETS-1
 
 El sprint-projects-1 de acamica nos proponen realizar los end-points para nuestra tienda denominada "Delilah Restó", donde sus primordialidades son **Registro de usuarios, Productos, Pedidos** tambien se agregan end-points de **Metodos de pago** que a lo largo del desarrollo se ven necesarios.
