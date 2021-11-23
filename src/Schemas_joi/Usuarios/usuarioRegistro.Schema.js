@@ -33,7 +33,7 @@ const usuarioValidation = joi.object().keys({
                 .length(10).message("La logitud del numero telefonico debe ser de 10 digitos")
                 .pattern(/^[0-9]+$/).message("Numero de telefono incorrecto")
                 .messages({
-                        "string.base": `Solo numeros`,
+                        "string.base": `Numero de telefono invalido`,
                         "any.required": `Telefono es requerido`,
                         "string.empty": `Numero de telefono es requerido`,
                 }),
@@ -41,8 +41,8 @@ const usuarioValidation = joi.object().keys({
                 .array()
                 .required()
                 .messages({
-                        "string.base": `Se debe ingresar una direccion valida`,
-                        "string.empty": `La direccion es requerida`,
+                        "array.base": `Se debe ingresar una direccion valida`,
+                        "array.empty": `La direccion es requerida`,
                 }),
 });
 

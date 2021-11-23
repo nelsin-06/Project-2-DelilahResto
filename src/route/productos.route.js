@@ -1,8 +1,10 @@
 const router = require('express').Router();
 const productoModelo = require('../models/producto.model');
 const validationProduct = require('../Schemas_joi/Productos/producto.Schema');
-//const validationEditProduct = require('../Schemas_joi/Productos/EdicionProducto');
 const esAdmin = require('../middlewares/esAdmin');
+const cache = require('../middlewares/cache.productos');
+const redis = require('redis');
+const clienteRedis = redis.createClient(6379);
 
 /**
  * @swagger
@@ -20,8 +22,10 @@ const esAdmin = require('../middlewares/esAdmin');
  *                          $ref: '#/components/schemas/obtenerproductos'
  */
 
-router.get("/listaproductos", async (req, res) =>{
-res.json(await productoModelo.find());
+router.get("/listaproductos", cache ,async (req, res) =>{
+    const productos = await productoModelo.find();
+    clienteRedis.setex('PRODUCTOS', 20, JSON.stringify(productos));
+    setTimeout(() => { res.json(productos); }, 4000);
 });
 
 /**
@@ -76,10 +80,10 @@ router.put("/edicionproductos/:id", esAdmin,async (req, res) => { //Actualizar u
         if (prodActualizado == null){
             res.status(400).json("Id de producto invalido");
         } else {
-        res.json(`Producto actualizado: Nombre: ${nombre}, Precio: ${precio}`);
+            clienteRedis.del('PRODUCTOS');
+            res.json(`Producto actualizado: Nombre: ${nombre}, Precio: ${precio}`);
     };
     } catch(err) {
-        console.log(err)
         if (err.name == "CastError"){
             res.status(400).json("Id de producto invalido");
         } else if (err.details == undefined) {
@@ -124,10 +128,11 @@ router.delete("/eliminarproductos/:id", esAdmin, async (req, res) => { //Elimina
         const {nombre, precio} = await productoModelo.findByIdAndDelete({ _id });
         if (nombre == undefined){
             res.json("No se encontro el producto indicado por id");
-        } else {res.json(`Se elimino satisfactoriamente el producto ${nombre} con el precio de ${precio}`)};
+        } else {
+            clienteRedis.del('PRODUCTOS');
+            res.status(201).json(`Se elimino satisfactoriamente el producto ${nombre} con el precio de ${precio}`)};
     } catch(err) {
         res.status(400).json("El id es invalido del producto a eliminar es invalido")
-//console.error(`ERROR AL ELIMINAR >>>>>>>>>>>>>>>>>>>>>>>> ${err}`);
     };
 });
 
@@ -168,7 +173,7 @@ router.delete("/eliminarproductos/:id", esAdmin, async (req, res) => { //Elimina
  *                          example: El nombre del producto debe ser un string y el precio un numero.
  *          
  */
-router.post("/agregarproductos", esAdmin, async (req, res) => { //Creando un producto nuevo
+router.post("/agregarproductos", async (req, res) => { //Creando un producto nuevo
     try {
         const { nombre, precio } = await validationProduct.validateAsync(req.body);
         const productDB = await productoModelo.findOne({nombre});
@@ -178,10 +183,10 @@ router.post("/agregarproductos", esAdmin, async (req, res) => { //Creando un pro
                 precio,
             });
             await productNew.save();
+            clienteRedis.del('PRODUCTOS');
             res.status(200).json("El producto " + nombre + " Fue creado exitosamente");
         } else {res.status(400).json("El producto ya se encuentra registrado")};
     } catch (err) {
-//console.log("ERROR AL CREAR PRODUCTO>>>>>>>>>>>>>" + err);
         if (err.details == undefined) {
             res.status(500).json("INTERNAL SERVER_ERROR=500");
         } else{ 

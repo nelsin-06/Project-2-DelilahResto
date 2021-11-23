@@ -12,8 +12,7 @@ const estadoCerrado = async (req, res, next) => {
         res.status(400).json("Aun tiene un pedido en proceso, espere a que termine para poder realizar uno nuevamente");
     }
 } catch (err) {
-    console.log(err)
-    res.json("error error error")
+    res.json("INTERNAL SERVER ERROR=500")
 }
 };
 

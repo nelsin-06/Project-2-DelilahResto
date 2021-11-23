@@ -7,7 +7,7 @@ const esAdmin = async (req, res, next) => {
     if (usuario.isAdmin == true) {
         next()
     } else {
-        res.status(401).json("Necesita permiso de administrador para realizar estas acciones");
+        res.status(401).json("Necesita permiso de administrador para realizar esta accion");
     }
 };
 

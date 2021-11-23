@@ -167,7 +167,6 @@ router.delete("/eliminarmetodo/:id", async (req, res) => {
     try {
         const { id: _id } = req.params;
         const metPago = await metoPagoModelo.findOne({_id});
-        console.log(metPago)
         if (metPago == null) {
             res.status(400).json('Id de metodo de pago invalido')
         } else {

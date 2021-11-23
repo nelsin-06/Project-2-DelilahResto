@@ -25,11 +25,10 @@ const eliminarDireccionUsuario = require('../helpers/eliminarDireccion');
  */
 router.get('/obtenerusuarios', esAdmin, async (req, res) => {
     try {
-        res.json( await usuarioModelo.find());
-}   catch (err) {
+        res.json(await usuarioModelo.find());
+    } catch (err) {
         res.status(500).json("A OCURRIDO UN ERROR - 500 INTERNAL ERROR");
-        console.log(err);
-};
+    };
 });
 
 /**
@@ -59,28 +58,26 @@ router.get('/obtenerusuarios', esAdmin, async (req, res) => {
 router.post("/ingresar", async (req, res) => {
     try {
         const { email, password } = await loginValidation.validateAsync(req.body);
-        const {password: pass, username} = await usuarioModelo.findOne({email});
+        const { password: pass, username } = await usuarioModelo.findOne({ email });
         const verificacion = await matchPassword(password, pass);
-        if(verificacion){
+        if (verificacion) {
             const token = JWT.sign({ username, email }, process.env.PASS);
-            res.status(200).json({token});
+            res.status(200).json({ token });
         } else {
             res.status(401).json("Unauthorized");
         };
-} catch (err) {
-    console.log(err)
-    res.status(401).json("Unauthorized")
-}
+    } catch (err) {
+        res.status(401).json("Unauthorized")
+    }
 })
 
 router.get('/micuenta', async (req, res) => {
     try {
         const { email } = req.user;
-        res.status(200).json(await usuarioModelo.find({email}));
-}   catch (err) {
+        res.status(200).json(await usuarioModelo.find({ email }));
+    } catch (err) {
         res.status(500).json("A OCURRIDO UN ERROR - 500 INTERNAL ERROR");
-        console.log(err);
-};
+    };
 })
 
 /**
@@ -113,61 +110,59 @@ router.get('/micuenta', async (req, res) => {
  *                          type: string
  *                          example: Este correo ya existe en nuestro sistema.
  *                      
- */                     
+ */
 router.post("/registrar", async (req, res) => {
     try {
-    const { email, username, password, telefono, direccion } = await usuarioValidation.validateAsync(req.body);
-    direccion[0].id = Math.floor((Math.random() * (300 - 100 + 1)) + 100);
-    const verificacion = await usuarioModelo.findOne({email});
-    if (verificacion == null){
-        const userNew = await new usuarioModelo ({
-            email,
-            username,
-            password,
-            telefono,
-            direccion
-        });
-        userNew.password = await encryptPassword(password);
-        await userNew.save();
-        res.status(201).json(`USUARIO CREADO Username: ${userNew.username} Email: ${userNew.email}`);
-    } else {
-        res.status(400).json("El email ya se encuentra registrado");
-    };
-}   catch (err) {
-        console.log(err)
+        const { email, username, password, telefono, direccion } = await usuarioValidation.validateAsync(req.body);
+        direccion[0].id = Math.floor((Math.random() * (300 - 100 + 1)) + 100);
+        const verificacion = await usuarioModelo.findOne({ email });
+        if (verificacion == null) {
+            const userNew = await new usuarioModelo({
+                email,
+                username,
+                password,
+                telefono,
+                direccion
+            });
+            userNew.password = await encryptPassword(password);
+            await userNew.save();
+            res.status(201).json(`USUARIO CREADO Username: ${userNew.username} Email: ${userNew.email}`);
+        } else {
+            res.status(400).json("El email ya se encuentra registrado");
+        };
+    } catch (err) {
         if (err.details == undefined) {
             res.status(500).json("INTERNAL SERVER_ERROR=500")
         }
         else if (err.details[0].type == "any.only") {
             res.status(400).json("Las contrasenas no coinciden");
-        } else { res.status(400).json(err.details[0].message)};
-};
+        } else { res.status(400).json(err.details[0].message) };
+    };
 });
 
 
 
 router.post("/aggdireccion/:id", async (req, res) => {
-    try{
-    const {id: _id} = req.params;
-    const nuevaDireccion = req.body;
-    const user = await usuarioModelo.findById({_id});
-    nuevaDireccion.id = Math.floor((Math.random() * (300 - 100 + 1)) + 100);
-    user.direccion.push(nuevaDireccion);
-    await user.save();
-    res.json(nuevaDireccion);
-} catch (err){
-    console.log(err)
-    res.status(500).json("INTERNAL SERVER ERROR_500")
-}
+    try {
+        const { id: _id } = req.params;
+        const nuevaDireccion = req.body;
+        const user = await usuarioModelo.findById({ _id });
+        nuevaDireccion.id = Math.floor((Math.random() * (300 - 100 + 1)) + 100);
+        user.direccion.push(nuevaDireccion);
+        await user.save();
+        res.json(nuevaDireccion);
+    } catch (err) {
+        res.status(500).json("INTERNAL SERVER ERROR_500")
+    }
 });
 
 router.delete("/deldireccion/:id", async (req, res) => {
     try {
         const { id: _id } = req.params;
         const { id } = req.body;
-        const user = await usuarioModelo.findById({_id});
+        const user = await usuarioModelo.findById({ _id });
         const verificacion = eliminarDireccionUsuario(user.direccion, id);
-        if (verificacion != false){
+        if (verificacion != false) {
             await user.save();
             res.json("Direccion Eliminada");
         } else {

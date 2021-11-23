@@ -102,7 +102,6 @@ router.post("/realizarpedido", estadoCerrado, async (req, res) => { //REALIZAR U
     res.json(nuevoPedido);
 }}}};
     } catch (err) {
-        console.log(err)
         if (err.details == undefined){
             res.status(500).json("INTERNAL ERRRO_500")
         } else {
@@ -201,7 +200,6 @@ router.post("/estado/:idpedido", esAdmin,async (req, res) => {  //CAMBIAR EL EST
             res.status(400).json("Los estados de pedido validos son: CONFIRMADO, PENDIENTE, EN PREPARACION, ENTREGADO, CERRADO");
         }
     } catch (err) {
-        console.log(err)
         res.json("Id de pedido invalido");
     };
 });

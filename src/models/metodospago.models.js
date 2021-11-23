@@ -9,6 +9,4 @@ const metodoPagoSchema = new mongoose.Schema ({
     }
 });
 
-
-
-module.exports = mongoose.model("metodosPago", metodoPagoSchema);   
+module.exports = mongoose.model("metodosPago", metodoPagoSchema);
