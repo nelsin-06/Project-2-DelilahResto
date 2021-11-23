@@ -306,6 +306,44 @@ describe('REGISTRO DE USUARIO', () => {
                         password: "secreto123",
                         confirm_password: "secreto123",
                         telefono: "3139923134",
+                        direccion: [{}]
+                    }
+                    chai.request(app)
+                        .post('/usuarios/registrar')
+                        .send(usuario)
+                        .end((err, response) => {
+                            response.should.have.status(400);
+                            response.should.be.a('object');
+                            done();
+                        });
+                });
+
+                it('debe devolver un status 400 ya que la forma de ingresar la direccion es incorrecta', (done) => {
+                    const usuario = {
+                        email: "correotest@test.com",
+                        username: "usuario test",
+                        password: "secreto123",
+                        confirm_password: "secreto123",
+                        telefono: "3139923134",
+                        direccion: "calle test #123-123"
+                    }
+                    chai.request(app)
+                        .post('/usuarios/registrar')
+                        .send(usuario)
+                        .end((err, response) => {
+                            response.should.have.status(400);
+                            response.should.be.a('object');
+                            done();
+                        });
+                });
+
+                it('debe devolver un status 400 ya que no se ingresa ninguna direccion', (done) => {
+                    const usuario = {
+                        email: "correotest@test.com",
+                        username: "usuario test",
+                        password: "secreto123",
+                        confirm_password: "secreto123",
+                        telefono: "3139923134",
                         direccion: []
                     }
                     chai.request(app)
@@ -317,6 +355,7 @@ describe('REGISTRO DE USUARIO', () => {
                             done();
                         });
                 });
+
             });
 
         });
