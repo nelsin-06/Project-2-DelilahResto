@@ -53,24 +53,24 @@ router.get("/metodosdepago", async (req, res) => {
  */
 router.post("/agremetodopago", async (req, res) => {
     try {
-    const { medio } = await metodoPagoValidacion.validateAsync(req.body);
-    const verificacion = await metoPagoModelo.findOne({medio});
-    if (verificacion == null) {
-        const metNew = await new metoPagoModelo({
-            medio
-        });
-        await metNew.save()
-        res.status(201).json(`Se creo el metodo de pago ${medio} exitosamente`)
-    } else {
-        res.status(400).json('El metodo de pago ya existe');
-    };
-    } catch (err) {
-            if (err.details == undefined) {
-                res.status(500).json('INTERNAL SEVER_ERROR=500');
-            } else {
-                res.status(400).json(res.json(err.details[0].message));
-            }
+        const { medio } = await metodoPagoValidacion.validateAsync(req.body);
+        const verificacion = await metoPagoModelo.findOne({ medio });
+        if (verificacion == null) {
+            const metNew = await new metoPagoModelo({
+                medio
+            });
+            await metNew.save()
+            res.status(201).json(`Se creo el metodo de pago ${medio} exitosamente`)
+        } else {
+            res.status(400).json('El metodo de pago ya existe');
         };
+    } catch (err) {
+        if (err.details == undefined) {
+            res.status(500).json('INTERNAL SEVER_ERROR=500');
+        } else {
+            res.status(400).json(res.json(err.details[0].message));
+        }
+    };
 });
 
 /**
@@ -113,15 +113,15 @@ router.post("/agremetodopago", async (req, res) => {
 
 router.put("/editarmetodo/:id", async (req, res) => {
     try {
-    const { id: _id } = req.params;
-    const { medio } = await metodoPagoValidacion.validateAsync(req.body);
-    const metPago = await metoPagoModelo.findById({_id});
-    if (metPago == null) {
-        res.status(400).json('Id de metodo de pago invalido');
-    } else {
-    const resultado = await metoPagoModelo.findByIdAndUpdate({_id}, {"medio": medio});
-    res.json(`Se actualizo correctamente el medio de pago a ${medio}`)
-    };    
+        const { id: _id } = req.params;
+        const { medio } = await metodoPagoValidacion.validateAsync(req.body);
+        const metPago = await metoPagoModelo.findById({ _id });
+        if (metPago == null) {
+            res.status(400).json('Id de metodo de pago invalido');
+        } else {
+            const resultado = await metoPagoModelo.findByIdAndUpdate({ _id }, { "medio": medio });
+            res.json(`Se actualizo correctamente el medio de pago a ${medio}`)
+        };
     } catch (err) {
         if (err.name == 'CastError') {
             res.json('Id de metodo de pago invalido')
@@ -166,20 +166,20 @@ router.put("/editarmetodo/:id", async (req, res) => {
 router.delete("/eliminarmetodo/:id", async (req, res) => {
     try {
         const { id: _id } = req.params;
-        const metPago = await metoPagoModelo.findOne({_id});
+        const metPago = await metoPagoModelo.findOne({ _id });
         if (metPago == null) {
             res.status(400).json('Id de metodo de pago invalido')
         } else {
-            const resultado = await metoPagoModelo.findByIdAndDelete({_id});
+            const resultado = await metoPagoModelo.findByIdAndDelete({ _id });
             res.json(`Se elimino correctamente el metodo de pago ${metPago.medio}`)
-            };
-            } catch (err) {
-                if (err.name == 'CastError') {
-                    res.json('Id de metodo de pago invalido')
-                } else {
-                    res.status(400).json('INTERNAL SERVER_ERROR=500');
-                };
-            };
+        };
+    } catch (err) {
+        if (err.name == 'CastError') {
+            res.json('Id de metodo de pago invalido')
+        } else {
+            res.status(400).json('INTERNAL SERVER_ERROR=500');
+        };
+    };
 });
 
 /**

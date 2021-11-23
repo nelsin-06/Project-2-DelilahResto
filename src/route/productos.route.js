@@ -22,7 +22,7 @@ const clienteRedis = redis.createClient(6379);
  *                          $ref: '#/components/schemas/obtenerproductos'
  */
 
-router.get("/listaproductos", cache ,async (req, res) =>{
+router.get("/listaproductos", cache, async (req, res) => {
     const productos = await productoModelo.find();
     clienteRedis.setex('PRODUCTOS', 20, JSON.stringify(productos));
     setTimeout(() => { res.json(productos); }, 4000);
@@ -72,23 +72,23 @@ router.get("/listaproductos", cache ,async (req, res) =>{
  *                          type: string
  *                          example: El precio del producto debe ser un numero y el nombre del producto debe ser una string.
  */
-router.put("/edicionproductos/:id", esAdmin,async (req, res) => { //Actualizar un producto ya creado
+router.put("/edicionproductos/:id", esAdmin, async (req, res) => { //Actualizar un producto ya creado
     try {
-    const { id:_id } = req.params;
-    const { nombre, precio } = await validationProduct.validateAsync(req.body);
-        const prodActualizado = await productoModelo.findByIdAndUpdate(_id, {nombre, precio});
-        if (prodActualizado == null){
+        const { id: _id } = req.params;
+        const { nombre, precio } = await validationProduct.validateAsync(req.body);
+        const prodActualizado = await productoModelo.findByIdAndUpdate(_id, { nombre, precio });
+        if (prodActualizado == null) {
             res.status(400).json("Id de producto invalido");
         } else {
             clienteRedis.del('PRODUCTOS');
             res.json(`Producto actualizado: Nombre: ${nombre}, Precio: ${precio}`);
-    };
-    } catch(err) {
-        if (err.name == "CastError"){
+        };
+    } catch (err) {
+        if (err.name == "CastError") {
             res.status(400).json("Id de producto invalido");
         } else if (err.details == undefined) {
             res.status(500).json("INTERNAL SERVER_ERROR=500")
-        } else { res.status(400).json(err.details[0].message)};
+        } else { res.status(400).json(err.details[0].message) };
     };
 });
 
@@ -124,14 +124,15 @@ router.put("/edicionproductos/:id", esAdmin,async (req, res) => { //Actualizar u
  */
 router.delete("/eliminarproductos/:id", esAdmin, async (req, res) => { //Eliminar un producto de la lista
     try {
-        const { id:_id } = req.params;
-        const {nombre, precio} = await productoModelo.findByIdAndDelete({ _id });
-        if (nombre == undefined){
+        const { id: _id } = req.params;
+        const { nombre, precio } = await productoModelo.findByIdAndDelete({ _id });
+        if (nombre == undefined) {
             res.json("No se encontro el producto indicado por id");
         } else {
             clienteRedis.del('PRODUCTOS');
-            res.status(201).json(`Se elimino satisfactoriamente el producto ${nombre} con el precio de ${precio}`)};
-    } catch(err) {
+            res.status(201).json(`Se elimino satisfactoriamente el producto ${nombre} con el precio de ${precio}`)
+        };
+    } catch (err) {
         res.status(400).json("El id es invalido del producto a eliminar es invalido")
     };
 });
@@ -176,20 +177,20 @@ router.delete("/eliminarproductos/:id", esAdmin, async (req, res) => { //Elimina
 router.post("/agregarproductos", async (req, res) => { //Creando un producto nuevo
     try {
         const { nombre, precio } = await validationProduct.validateAsync(req.body);
-        const productDB = await productoModelo.findOne({nombre});
-        if (productDB == null){
-            const productNew = await new productoModelo ({
-                nombre, 
+        const productDB = await productoModelo.findOne({ nombre });
+        if (productDB == null) {
+            const productNew = await new productoModelo({
+                nombre,
                 precio,
             });
             await productNew.save();
             clienteRedis.del('PRODUCTOS');
             res.status(200).json("El producto " + nombre + " Fue creado exitosamente");
-        } else {res.status(400).json("El producto ya se encuentra registrado")};
+        } else { res.status(400).json("El producto ya se encuentra registrado") };
     } catch (err) {
         if (err.details == undefined) {
             res.status(500).json("INTERNAL SERVER_ERROR=500");
-        } else{ 
+        } else {
             res.status(400).json(err.details[0].message);
         }
     };

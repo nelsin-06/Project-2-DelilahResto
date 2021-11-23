@@ -114,22 +114,26 @@ router.get('/micuenta', async (req, res) => {
 router.post("/registrar", async (req, res) => {
     try {
         const { email, username, password, telefono, direccion } = await usuarioValidation.validateAsync(req.body);
-        direccion[0].id = Math.floor((Math.random() * (300 - 100 + 1)) + 100);
-        const verificacion = await usuarioModelo.findOne({ email });
-        if (verificacion == null) {
-            const userNew = await new usuarioModelo({
-                email,
-                username,
-                password,
-                telefono,
-                direccion
-            });
-            userNew.password = await encryptPassword(password);
-            await userNew.save();
-            res.status(201).json(`USUARIO CREADO Username: ${userNew.username} Email: ${userNew.email}`);
+        if (direccion[0] == undefined || direccion[0].direccion == undefined) {
+            res.status(400).json('Se debe ingresar una direccion valida');
         } else {
-            res.status(400).json("El email ya se encuentra registrado");
-        };
+            direccion[0].id = Math.floor((Math.random() * (300 - 100 + 1)) + 100);
+            const verificacion = await usuarioModelo.findOne({ email });
+            if (verificacion == null) {
+                const userNew = await new usuarioModelo({
+                    email,
+                    username,
+                    password,
+                    telefono,
+                    direccion
+                });
+                userNew.password = await encryptPassword(password);
+                await userNew.save();
+                res.status(201).json(`USUARIO CREADO Username: ${userNew.username} Email: ${userNew.email}`);
+            } else {
+                res.status(400).json("El email ya se encuentra registrado");
+            };
+        }
     } catch (err) {
         if (err.details == undefined) {
             res.status(500).json("INTERNAL SERVER_ERROR=500")
