@@ -51,7 +51,7 @@ router.get("/metodosdepago", async (req, res) => {
  *                          type: string
  *                          example: El metodo de pago ya existe - ingrese un medio de pago valido
  */
-router.post("/agremetodopago", async (req, res) => {
+router.post("/agremetodopago", esAdmin, async (req, res) => {
     try {
         const { medio } = await metodoPagoValidacion.validateAsync(req.body);
         const verificacion = await metoPagoModelo.findOne({ medio });
@@ -111,7 +111,7 @@ router.post("/agremetodopago", async (req, res) => {
  * 
  */
 
-router.put("/editarmetodo/:id", async (req, res) => {
+router.put("/editarmetodo/:id", esAdmin, async (req, res) => {
     try {
         const { id: _id } = req.params;
         const { medio } = await metodoPagoValidacion.validateAsync(req.body);
@@ -135,7 +135,7 @@ router.put("/editarmetodo/:id", async (req, res) => {
 
 /**
  * @swagger
- * /metodopagos/eliminarmetodo:
+ * /metodopagos/eliminarmetodo/{IdMetodoDePago}:
  *  delete:
  *      summary: Eliminar un metodo de pago del sistema
  *      description: Eliminar metodo de pago del sistema
@@ -163,7 +163,7 @@ router.put("/editarmetodo/:id", async (req, res) => {
  *                          type: string
  *                          example: Id de metodo de pago invalido
  */
-router.delete("/eliminarmetodo/:id", async (req, res) => {
+router.delete("/eliminarmetodo/:id", esAdmin, async (req, res) => {
     try {
         const { id: _id } = req.params;
         const metPago = await metoPagoModelo.findOne({ _id });
