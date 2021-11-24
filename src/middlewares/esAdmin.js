@@ -3,7 +3,7 @@ const usuarioModelo = require('../models/usuario.model');
 
 const esAdmin = async (req, res, next) => {
     const { email } = req.user;
-    const usuario = await usuarioModelo.find({email});
+    const usuario = await usuarioModelo.findOne({email});
     if (usuario.isAdmin == true) {
         next()
     } else {
