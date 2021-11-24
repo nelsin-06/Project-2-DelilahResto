@@ -122,7 +122,7 @@ router.get("/mipedido", async (req, res) => { //OBTENER MIS PEDIDOS (USUARIO LOG
  * @swagger
  * /pedidos/totalpedidos:
  *  get:
- *      summary: Obtener todos los pedidos de todos los usuarios
+ *      summary: Obtener todos los pedidos de todos los usuarios (ADMIN)
  *      description: Se obtiene una lista con todos los pedidos de todos los usuarios.
  *      tags: [PEDIDOS]
  *      schema:
@@ -195,7 +195,7 @@ router.post("/estado/:idpedido", esAdmin, async (req, res) => {  //CAMBIAR EL ES
  * @swagger
  * /pedidos/estado/{IdDePedido}:
  *  get:
- *      summary: Confirmar y cambiar el estado mi pedido.
+ *      summary: Confirmar y cambiar el estado de mi pedido.
  *      description: El estado del pedido indicado pasa a "CONFIRMADO" y se empieza a preparar.
  *      tags: [PEDIDOS]
  *      parameters:
@@ -307,16 +307,16 @@ router.put("/editarpedido/:idpedido", async (req, res) => { // MODIFICAR LA CANT
  * @swagger
  * /pedidos/editarpedido/{IdDepedido}:
  *  delete:
- *      summary: Eliminar un producto de nuestra orden en el pedido
- *      description: eliminar un producto ya agregado de nuestra orden de un pedido indicado por IdDePedido.
+ *      summary: Eliminar un producto de nuestra orden.
+ *      description: eliminar un producto ya agregado el cual se indica por Id.
  *      tags: [PEDIDOS]
  *      parameters:
  *        - in: path
  *          name: IdDepedido
  *          required: true
  *          schema:
- *              type: number
- *              example: 999
+ *              type: string
+ *              example: asd123
  *      requestBody:
  *          required: true
  *          content:
@@ -325,37 +325,27 @@ router.put("/editarpedido/:idpedido", async (req, res) => { // MODIFICAR LA CANT
  *                      $ref: '#/components/schemas/eliminarProductoDeOrden'
  *      responses:
  *          201:
- *              description: Se hallo y se elimino correctamente el producto 
+ *              description: El producto se encontro en el pedido y se elimino
  *              content:
  *                  text/plain:
  *                      schema:
  *                          type: string
- *                          example: Producto (Nombre del producto) fue eliminado correctamente del pedido
+ *                          example: No hallamos el producto en el pedido
  *          400:
- *              description: ID invalido
+ *              description: Posibles errores lanzados por la API por incidencias en la sintaxis y/o requisitos necesarios para realizar la solicitud. 
  *              content:
  *                  text/plain:
  *                      schema:
  *                          type: string
- *                          example: El ID de pedido indicado no es correcto o no existe
- * 
- *                                  El ID del producto a eliminar es invalido o no existe
- *          200:
- *              description: Si el pedido en se encuentra en un estado diferente a "Pendiente" 
- *              content:
- *                  text/plain:
- *                      schema:
- *                          type: string
- *                          example:
- *                               Su pedido esta en estado confirmado por ende no se puede modificar
- *  
+ *                          example: No hallamos el producto en el pedido - ingrese un Id de pedido valido
  *          
  */
 router.delete("/editarpedido/:idpedido", async (req, res) => { //ELIMINAR PRODUCTOS DE UN PEDIDO.
     try {
-        const { idpedido } = req.params;
-        const { idproducto } = pedidoDelValidacion.validateAsync(req.body);
-        const pedido = await pedidoModelo.findById({ "_id": idpedido });
+        const { idpedido: _id  } = req.params;
+        const { idproducto } = await pedidoDelValidacion.validateAsync(req.body);
+        const pedido = await pedidoModelo.findById({ _id });
+        if (pedido == null) { return res.status(400).json('Id de pedido invalido')}
         const resultado = eliminarProductoDeOrden(pedido.orden, idproducto);
         if (resultado == false) {
             res.json('No hallamos el producto en el pedido');
@@ -380,15 +370,15 @@ router.delete("/editarpedido/:idpedido", async (req, res) => { //ELIMINAR PRODUC
  * /pedidos/editarpedido/{IdDepedido}:
  *  post:
  *      summary: Agregar un producto a nuestro pedido ya creado.
- *      description: Agregar un producto indicado por ID y su cantidad a un pedido ya creado indicado por IdDePedido  
+ *      description: Agregar un producto a un pedido ya creado, si el producto ya esta en el pedido se adiciona la cantidad indicada en la nueva peticion.
  *      tags: [PEDIDOS]
  *      parameters:
  *        - in: path
  *          name: IdDepedido
  *          required: true
  *          schema:
- *              type: number
- *              example: 999
+ *              type: string
+ *              example: asd123
  *      requestBody:
  *          required: true
  *          content:
@@ -397,38 +387,20 @@ router.delete("/editarpedido/:idpedido", async (req, res) => { //ELIMINAR PRODUC
  *                      $ref: '#/components/schemas/agregarProductoEnOrden'
  *      responses:
  *          201:
- *              description: Se hallo y se agrego correctamente el producto y su cantidad
+ *              description: Se agrego exitosamente el producto nuevo o su cantidad aumento si ya se encontraba en la orden.
  *              content:
  *                  text/plain:
  *                      schema:
  *                          type: string
- *                          example: Se añadio correctamente el producto a tu pedido.
- *          200:
- *              description: Si el producto a ingresar ya esta en nuestra orden, lo unico que se modifica es su cantidad en la orden principal
- *              content:
- *                  text/plain:
- *                      schema:
- *                          type: string
- *                          example: Se agrego la cantidad deseada a tu producto ya que ya existe en tu pedido.
- *          
+ *                          example: Producto agregado correctamente al pedido - El producto ya se encuentra en el pedido, cantidad aumentada correctamente        
+ *              
  *          400:
- *              description: ID invalido
+ *              description: Posibles errores lanzados por la API por incidencias en la sintaxis y/o requisitos necesarios para realizar la solicitud.
  *              content:
  *                  text/plain:
  *                      schema:
  *                          type: string
- *                          example: El ID de pedido indicado no es correcto.
- * 
- *                                   El producto indicado por ID no existe.
- * 
- *          200-1:
- *              description: Si el pedido en se encuentra en un estado diferente a "Pendiente" 
- *              content:
- *                  text/plain:
- *                      schema:
- *                          type: string
- *                          example:
- *                               Su pedido esta en estado confirmado por ende no se puede modificar
+ *                          example: No hallamos el producto en el pedido - ingrese un id de pedido valido - Producto invalido - cantidad invalida
  *  
  *
  */
@@ -554,8 +526,8 @@ router.post("/editarpedido/:idPedido", async (req, res) => { //AGREGAR PRODUCTOS
  *                  description: Id medio de pago disponibles.
  *          example:
  *              id_producto: "asd123"
- *              cantidad: 5
- *              id_direcciones: 199
+ *              cantidad: "5"
+ *              id_direccion: 199
  *              id_metodo_pago: "asd123"
  *     
  *      editar_estado_admin:
@@ -582,9 +554,8 @@ router.post("/editarpedido/:idPedido", async (req, res) => { //AGREGAR PRODUCTOS
  *                  type: number
  *                  description: Cantidad final deseada
  *          example:
- *              pedidos:
- *                  idproducto: asd123
- *                  cantidadproducto: 5
+ *                idproducto: asd123
+ *                cantidadproducto: "5"
  *      
  *      eliminarProductoDeOrden:
  *          type: object
@@ -592,27 +563,26 @@ router.post("/editarpedido/:idPedido", async (req, res) => { //AGREGAR PRODUCTOS
  *              - idproducto
  *          properties:
  *              idproducto:
- *                  type: number
- *                  description: Indicamos el ID del producto que deseamos eliminar de nuestra orden
+ *                  type: string
+ *                  description: Id del producto que se desea eliminar
  *          example:
- *              idproducto: 96
+ *              idproducto: asd123
  *      
  *      agregarProductoEnOrden:
  *          type: object
  *          require: 
- *              - pedido
+ *              - idproducto
+ *              - cantidadproducto
  *          properties:
- *              Pedido:
- *                  type: object
- *                  description: Objeto con Id indicando que producto queremos agregar y la cantidad deseada
- *                  id:
- *                      type: number
- *                      description: Id indicando que producto deseamos agregar
- *                  cantidad:
- *                      type: number
- *                      description: Cantidad del producto que deseamos agregar
+ *              idproducto:
+ *                  type: string
+ *                  description: Id del producto nuevo que queremos agregar a nuestra orden.
+ *              cantidadproducto:
+ *                  type: string
+ *                  description: Cantidad del producto que se desea agregar.
  *          example:
- *              pedido: {id: 200, cantidad: 10}
+ *              idproducto: "asd123"
+ *              cantidadproducto: "2"
  *                      
  */
 

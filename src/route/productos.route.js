@@ -40,7 +40,7 @@ router.get("/listaproductos", cache, async (req, res) => {
  *          name: IdDeProducto
  *          required: true
  *          schema:
- *              type: number
+ *              type: string
  *              example: asd123
  *      requestBody:
  *          required: true
@@ -159,7 +159,7 @@ router.delete("/eliminarproductos/:id", esAdmin, async (req, res) => { //Elimina
  *                          example: El producto ya se encuentra registrado - Nombre de produco invalido - precio de producto invalido.
  *          
  */
-router.post("/agregarproductos", async (req, res) => { //Creando un producto nuevo
+router.post("/agregarproductos", esAdmin, async (req, res) => { //Creando un producto nuevo
     try {
         const { nombre, precio } = await validationProduct.validateAsync(req.body);
         const productDB = await productoModelo.findOne({ nombre });

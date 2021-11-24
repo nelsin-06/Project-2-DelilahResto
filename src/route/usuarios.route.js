@@ -170,7 +170,7 @@ router.post("/registrar", async (req, res) => {
 
 /**
  * @swagger
- * /aggdireccion/{idDeUsuario}:
+ * /usuarios/aggdireccion:
  *  post:
  *      summary: Ingresar una nueva direccion a la libreta
  *      description: Ingresar una nueva direccion a la libreta del usuario previamente registrado.
@@ -198,7 +198,7 @@ router.post("/registrar", async (req, res) => {
  *                          example: Id de usuario invalido.
  */             
 
-router.post("/aggdireccion/:id", async (req, res) => {
+router.post("/aggdireccion", async (req, res) => {
     try {
         const { email } = req.user;
         const nuevaDireccion = req.body;
@@ -218,7 +218,7 @@ router.post("/aggdireccion/:id", async (req, res) => {
 
 /**
  * @swagger
- * /deldireccion/{idDeUsuario}:
+ * /usuarios/deldireccion:
  *  delete:
  *      summary: Eliminar una direccion a la libreta del usuario
  *      description: Eliminar direccion registrada en la libreta del usuario.
@@ -245,11 +245,11 @@ router.post("/aggdireccion/:id", async (req, res) => {
  *                          type: string
  *                          example: Id de usuario invalido - No hallamos el id en la lista de direcciones.
  */
-router.delete("/deldireccion/:id", async (req, res) => {
+router.delete("/deldireccion", async (req, res) => {
     try {
         const { email } = req.user;
         const { id } = req.body;
-        const user = await usuarioModelo.findById({ email });
+        const user = await usuarioModelo.findOne({ email });
         if (user == null){
             res.status(400).json('Id de usuario invalido');
         } else {
@@ -262,8 +262,53 @@ router.delete("/deldireccion/:id", async (req, res) => {
         };
     }} catch (err) {
         res.json("INTERNAL SERVER ERR0R_500");
+        console.log()
     };
 });
+
+/**
+ * @swagger
+ * /usuarios/cambiarestado/{IdDeUsuario}:
+ *  post:
+ *      summary: Eliminar una direccion a la libreta del usuario
+ *      description: Eliminar direccion registrada en la libreta del usuario.
+ *      tags: [USUARIOS]
+ *      parameters:
+ *        - in: path
+ *          name: IdDeUsuario
+ *          required: true
+ *          schema:
+ *              type: string
+ *              example: asd123
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/cambiarestado'
+ *      responses:
+ *          201:
+ *              description: Cambio de estado del usuario exitoso
+ *              content:
+ *                  aplication/json:
+ *                      schema:
+ *                          type: string
+ *                          example: Se modifico el estado del usuario
+ *          400:
+ *              description: Posibles errores lanzados por la API por incidencias en la sintaxis y/o requisitos necesarios para realizar la solicitud. 
+ *              content:
+ *                  aplication/json:
+ *                      schema:
+ *                          type: string
+ *                          example: Id de usuario invalido - Solo se admite estado de usuario true o false
+ */
+router.post('/cambiarestado/:id', async (req, res) => {
+    const { id: _id } = req.params;
+    const { estadousuario } = req.body;
+    await usuarioModelo.findByIdAndUpdate({ _id }, {"estado": estadousuario} ,(err, dato) => {if (dato) {return res.status(201).json('Se modifico el estado del usuario')
+} else if (err.valueType == "string" || err.valueType == "number") {return res.status(400).json('Solo se admite estado de usuario true o false')
+} else {return res.status(400).json('Id de usuario invalido')}});
+})
 
 /**
  * @swagger
@@ -273,6 +318,16 @@ router.delete("/deldireccion/:id", async (req, res) => {
  * 
  * components:
  *  schemas:
+ *      cambiarestado:
+ *          type: object
+ *          rquire:
+ *              - estadousuario
+ *          properties:
+ *              estadousuario:
+ *                  type: boolean
+ *                  description: Estado al cual se desea poner al usuario
+ *          example: 
+ *              estadousuario: true
  *      deldireccion:
  *          type: object
  *          require:
