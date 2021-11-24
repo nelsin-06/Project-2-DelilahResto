@@ -26,30 +26,30 @@ router.get("/metodosdepago", async (req, res) => {
  * @swagger
  * /metodopagos/agremetodopago:
  *  post:
- *      summary: Ingresar un nuevo metodo de pago al sistema
- *      description: Ingresar un nuevo metodo de pago unico e irrepetible al sistema
+ *      summary: Ingresar un nuevo metodo de pago.
+ *      description: Ingresar un nuevo metodo de pago a nuestro sistema.
  *      tags: [METODOS DE PAGO]
  *      requestBody:
  *          required: true
  *          content:
  *              application/json:
  *                  schema:
- *                      $ref: '#/components/schemas/newmethod'
+ *                      $ref: '#/components/schemas/agremetodopago'
  *      responses:
  *          201:
- *              description: Metodo de pago agregado
+ *              description: Metodo de pago agregado exitosamente.
  *              content:
  *                  text/plain:
  *                      schema:
  *                          type: string
- *                          example: Metodo de pago agregado
- *          200:
- *              description: Si el metodo actualmente existe.
+ *                          example: Se creo el metodo de pago PayPal exitosamente
+ *          400:
+ *              description: Posibles errores lanzados por la API por incidencias en la sintaxis y/o requisitos necesarios para realizar la solicitud.
  *              content:
  *                  text/plain:
  *                      schema:
  *                          type: string
- *                          example: Este metodo de pago ya existe.
+ *                          example: El metodo de pago ya existe - ingrese un medio de pago valido
  */
 router.post("/agremetodopago", async (req, res) => {
     try {
@@ -78,36 +78,36 @@ router.post("/agremetodopago", async (req, res) => {
  * /metodopagos/editarmetodo/{IdMetodoDePago}:
  *  put:
  *      summary: Edita el nombre de los metodos de pago dispobibles.
- *      description: Edita el nombre de los metodos de pago indicado por medio de su ID.
+ *      description: Edita el nombre de los metodos de pago indicado por medio de su Id.
  *      tags: [METODOS DE PAGO]
  *      parameters:
  *        - in: path
  *          name: IdMetodoDePago
  *          required: true
  *          schema:
- *              type: number
- *              example: 1
+ *              type: string
+ *              example: asd123
  *      requestBody:
  *          required: true
  *          content:
  *              application/json:
  *                  schema:
- *                      $ref: '#/components/schemas/editmethod'
+ *                      $ref: '#/components/schemas/editarMetodo'
  *      responses:
  *          201:
- *              description: Se hallo y se actualizao correctamente el metodo de pago
+ *              description: Actualizacion exitosa del metodo de pago.
  *              content:
  *                  text/plain:
  *                      schema:
  *                          type: string
- *                          example: Metodo de pago actualizado
+ *                          example: Se actualizo correctamente el medio de pago a Nequi
  *          400:
- *              description: el ID indicado del metodo de pago no existe.
+ *              description: Posibles errores lanzados por la API por incidencias en la sintaxis y/o requisitos necesarios para realizar la solicitud.
  *              content:
  *                  text/plain:
  *                      schema:
  *                          type: string
- *                          example: El ID indicado no existe en nuestros metodos de pago.
+ *                          example: Id de metodo de pago invalido - El metodo de pago ya existe - ingrese un medio de pago valido - medio de pago vacio
  * 
  */
 
@@ -137,31 +137,31 @@ router.put("/editarmetodo/:id", async (req, res) => {
  * @swagger
  * /metodopagos/eliminarmetodo:
  *  delete:
- *      summary: eliminar un metodo de pago del sistema
- *      description: Eliminar metodo de pago de nuestro sistema
+ *      summary: Eliminar un metodo de pago del sistema
+ *      description: Eliminar metodo de pago del sistema
  *      tags: [METODOS DE PAGO]
- *      requestBody:
+ *      parameters:
+ *        - in: path
+ *          name: IdMetodoDePago
  *          required: true
- *          content:
- *              application/json:
- *                  schema:
- *                      $ref: '#/components/schemas/deletemethod'
+ *          schema:
+ *              type: string
+ *              example: asd123
  *      responses:
- *          200:
- *              description: Metodo de pago hallado y eliminado
+ *          201:
+ *              description: Metodo de pago eliminado exitosamente.
  *              content:
  *                  text/plain:
  *                      schema:
  *                          type: string
- *                          example: Metodo de pago eliminado correctamente.
+ *                          example: Se elimino correctamente el metodo de pago Nequi
  *          400:
- *              description: Si el ID indicado del metodo de pago no existe.
+ *              description: Posibles errores lanzados por la API por incidencias en la sintaxis y/o requisitos necesarios para realizar la solicitud.
  *              content:
  *                  text/plain:
  *                      schema:
  *                          type: string
- *                          example: El ID indicado no existe en nuestros metodos de pago.
- * 
+ *                          example: Id de metodo de pago invalido
  */
 router.delete("/eliminarmetodo/:id", async (req, res) => {
     try {
@@ -171,11 +171,11 @@ router.delete("/eliminarmetodo/:id", async (req, res) => {
             res.status(400).json('Id de metodo de pago invalido')
         } else {
             const resultado = await metoPagoModelo.findByIdAndDelete({ _id });
-            res.json(`Se elimino correctamente el metodo de pago ${metPago.medio}`)
+            res.status(201).json(`Se elimino correctamente el metodo de pago ${metPago.medio}`)
         };
     } catch (err) {
         if (err.name == 'CastError') {
-            res.json('Id de metodo de pago invalido')
+            res.status(400).json('Id de metodo de pago invalido')
         } else {
             res.status(400).json('INTERNAL SERVER_ERROR=500');
         };
@@ -202,7 +202,7 @@ router.delete("/eliminarmetodo/:id", async (req, res) => {
  *          example:
  *              medio: Efectivo
  *              id: 1
- *      newmethod:
+ *      agremetodopago:
  *          type: object
  *          require:
  *              - medio
@@ -212,29 +212,17 @@ router.delete("/eliminarmetodo/:id", async (req, res) => {
  *                  description: Nombre del nuevo metodo de pago a agregar.
  *          example:
  *              medio: "PayPal"
- *          
  * 
- *      deletemethod:
+ *      editarMetodo:
  *          type: object
  *          require:
- *              - id
+ *              - medio
  *          properties:
- *              id:
- *                  type: number
- *                  description: Id unico del metodo de pago que se desea eliminar.
- *          example:
- *              id: 1
- * 
- *      editmethod:
- *          type: object
- *          require:
- *              - metodo
- *          properties:
- *              metodo:
+ *              medio:
  *                  type: string
- *                  description: Nuevo nombre que se le asignara al metodo de pago indicado
+ *                  description: Nombre del metodo de pago actualizado.
  *          example:
- *              metodo: Nequi
+ *              medio: Nequi
  *          
  * 
  */

@@ -13,51 +13,35 @@ const usuarioModelo = require('../models/usuario.model');
 const productoModelo = require('../models/producto.model');
 const estadoCerrado = require('../middlewares/estadoCerrado');
 const esAdmin = require('../middlewares/esAdmin');
-//const middlewaresLogin = require("../middlewares/autenticacion.middleware");
-//const { esAdmin } = require("../middlewares/esAdmin.middleware");
 
 /**
  * @swagger
  * /pedidos/realizarpedido:
  *  post:
  *      summary: Realizar un pedido
- *      description: Realice un pedido indicando id, cantidad de producto y elija su tipo de pago. 
+ *      description: Realice un pedido indicando su producto, cantidad de producto, direccion y su medio de pago.
  *      tags: [PEDIDOS]
  *      requestBody:
  *          required: true
  *          content:
  *              application/json:
  *                  schema:
- *                      $ref: '#/components/schemas/makeorder'
+ *                      $ref: '#/components/schemas/realizarpedido'
  *      responses:
  *          201:
- *              description: Pedido (#pedido) creado exitosamente
+ *              description: Creacion del pedido exitosamente
  *              content:
  *                  text/plain:
  *                      schema:
- *                          type: string
- *                          example: Pedido creado exitosamente
- *          200:
- *              description: Ya tiene un pedido en estado "Pendiente", por ende no puede realizar un nuevo pedido.
- *              content:
- *                  text/plain:
- *                      schema:
- *                          type: string
- *                          example: Ya tiene un pedido en proceso
+ *                          type: object
+ *                          example: {id: asd123, estado_pedido: "PENDIENTE", usuario: {id: asd123, email: "correoprueba@gmail.com", username: "usuario prueba", telefono: "3999123991"}, orden: [{id: asd123, nombre: "Pollo", precio: 5200, cantidad: 2}], precio_total: 10400, direccion_pedido: {id: asd123, direccion: "calle prueba #13-12"}, metodo_pago: {id: asd123, medio: "Nequi"}}
  *          400:
- *              description: Si se ingresa un ID de producto incorrecto
+ *              description: Posibles errores lanzados por la API por incidencias en la sintaxis y/o requisitos necesarios para realizar la solicitud.
  *              content:
  *                  text/plain:
  *                      schema:
  *                          type: string
- *                          example: El ID no existe en nuestros productos
- *          404:
- *              description: Si se ingresa un ID de pago inexistente
- *              content:
- *                  text/plain:
- *                      schema:
- *                          type: string
- *                          example: El ID de pago no es correcto
+ *                          example: No hallamos el metodo de pago - No hallamos el usuario - No hallamos la direccion - No hallamos el producto - datos invalidos.
  *
  */
 
@@ -112,6 +96,7 @@ router.post("/realizarpedido", estadoCerrado, async (req, res) => { //REALIZAR U
         }
     };
 });
+
 /**
  * @swagger
  * /pedidos/mipedido:
@@ -126,7 +111,7 @@ router.post("/realizarpedido", estadoCerrado, async (req, res) => { //REALIZAR U
  *              content:
  *                  application/json:
  *                      schema:
- *                          $ref: '#/components/schemas/obtenermipedido'
+ *                          $ref: '#/components/schemas/mipedido'
  */
 router.get("/mipedido", async (req, res) => { //OBTENER MIS PEDIDOS (USUARIO LOGUEADO)
     const { email } = req.user;
@@ -165,14 +150,14 @@ router.get("/totalpedidos", esAdmin, async (req, res) => { //OBTENER TODOS LOS P
  *          name: IdDePedido
  *          required: true
  *          schema:
- *              type: number
- *              example: 999
+ *              type: string
+ *              example: asd123
  *      requestBody:
  *          required: true
  *          content:
  *              application/json:
  *                  schema:
- *                      $ref: '#/components/schemas/edit_estageAdmin'
+ *                      $ref: '#/components/schemas/editar_estado_admin'
  *      responses:
  *          200:
  *              description:
@@ -180,14 +165,14 @@ router.get("/totalpedidos", esAdmin, async (req, res) => { //OBTENER TODOS LOS P
  *                  text/plain:
  *                      schema:
  *                          type: string
- *                          example: Estado del pedido actualizado.
+ *                          example: Es estado del pedido cambio a ENTREGADO.
  *          404:
- *              description: bad request
+ *              description: Posibles errores lanzados por la API por incidencias en la sintaxis y/o requisitos necesarios para realizar la solicitud.
  *              content:
  *                  text/plain:
  *                      schema:
  *                          type: string
- *                          example: El ID indicado no corresponde a ningun pedido.
+ *                          example: Los estados de pedido validos son CONFIRMADO, PENDIENTE, EN PREPARACION, ENTREGADO, CERRADO - Id de pedido invalido
  */
 //pendiente, confirmado, en preparacion, entregado, cerrado
 router.post("/estado/:idpedido", esAdmin, async (req, res) => {  //CAMBIAR EL ESTADO DEL PEDIDO (ADMIN).
@@ -210,39 +195,32 @@ router.post("/estado/:idpedido", esAdmin, async (req, res) => {  //CAMBIAR EL ES
  * @swagger
  * /pedidos/estado/{IdDePedido}:
  *  get:
- *      summary: Confirmar, enviar y cambiar de estado mi pedido.
- *      description: El estao del pedido indicado pasa a "Confirmado" y se empieza a preparar
+ *      summary: Confirmar y cambiar el estado mi pedido.
+ *      description: El estado del pedido indicado pasa a "CONFIRMADO" y se empieza a preparar.
  *      tags: [PEDIDOS]
  *      parameters:
  *        - in: path
  *          name: IdDePedido
  *          required: true
  *          schema:
- *              type: number
- *              example: 999
+ *              type: string
+ *              example: asd123
  *      schema:
  *      responses:
  *          201:
- *              description: El estado del pedido paso a confirmado
+ *              description: El usuario cambio exitosamente el estado del pedido a CONFIRMADO
  *              content:
  *                  text/plain:
  *                      schema:
  *                          type: string
- *                          example: El estado del pedido paso a confirmado
- *          200:
- *              description: Este pedido ya esta confirmado.
+ *                          example: El estado del pedido paso a CONFIRMADO
+ *          400:
+ *              description: Posibles errores lanzados por la API por incidencias en la sintaxis y/o requisitos necesarios para realizar la solicitud..
  *              content:
  *                  text/plain:
  *                      schema:
  *                          type: string
- *                          example: Este pedido ya esta confirmado.
- *          404:
- *              description: El ID del pedido indicado no existe.
- *              content:
- *                  text/plain:
- *                      schema:
- *                          type: string
- *                          example: El ID del pedido indicado no existe.
+ *                          example: No se hallo el pedido.
  */
 router.get("/estado/:idpedido", async (req, res) => { //CAMBIAR ESTADO DEL PEDIDO A CONFIRMADO.
     try {
@@ -260,51 +238,41 @@ router.get("/estado/:idpedido", async (req, res) => { //CAMBIAR ESTADO DEL PEDID
  * @swagger
  * /pedidos/editarpedido/{IdDePedido}:
  *  put:
- *      summary: Editar la cantidad de un producto en nuestra orden.
- *      description: Editar la cantidad de un producto indicado por ID de nuestro pedido indicado por IdDePedido.
+ *      summary: Editar la cantidad de un producto en la orden.
+ *      description: Editar la cantidad de un producto indicado por Id de nuestro pedido indicado por IdDePedido.
  *      tags: [PEDIDOS]
  *      parameters:
  *        - in: path
  *          name: IdDePedido
  *          required: true
  *          schema:
- *              type: number
- *              example: 999
+ *              type: string
+ *              example: asd123
  *      requestBody:
  *          required: true
  *          content:
  *              application/json:
  *                  schema:
- *                      $ref: '#/components/schemas/editarProductoOrden'
+ *                      $ref: '#/components/schemas/editarCantidadProducto'
  *      responses:
- *          400:
- *              description: bad request - ID invalido en alguno de los campos 
- *              content:
- *                  text/plain:
- *                      schema:
- *                          type: string
- *                          example:
- *                              No hallamos el ID de pedido indicado.
- * 
- *                              No hallamos el ID del producto a modificar.
- * 
  *          201:
- *              description: La cantidad del producto fue actualizada 
+ *              description: Cantidad de producto modificada exitosamente en el pedido 
  *              content:
  *                  text/plain:
  *                      schema:
  *                          type: string
  *                          example:
- *                               Cantidad modificada exitosamente.
- *          200:
- *              description: Si el pedido en se encuentra en un estado diferente a "Pendiente" 
+ *                              Cantidad de producto modificada exitosamente
+ * 
+ *          400:
+ *              description: Posibles errores lanzados por la API por incidencias en la sintaxis y/o requisitos necesarios para realizar la solicitud.
  *              content:
  *                  text/plain:
  *                      schema:
  *                          type: string
  *                          example:
- *                               Su pedido esta en estado confirmado por ende no se puede modificar
- *  
+ *                              ingrese un id de pedido valido - no se hallo el producto en nuestro pedido - Cantidad de producto invalida
+ *                                  
  *          
  */
 
@@ -509,140 +477,114 @@ router.post("/editarpedido/:idPedido", async (req, res) => { //AGREGAR PRODUCTOS
  * 
  * components:
  *  schemas:
- *      obtenermipedido:
+ *      mipedido:
  *          type: object
  *          properties:
- *              usuario:
+ *              estado_pedido:
  *                  type: string
- *                  description: Nombre del producto
- *              id_usuario:
- *                  type: number
- *                  description: ID unico de nuestros productos
- *              id_pedido:
- *                  type: number
- *                  description: Precio en pesos colombianos de nuestro producto
+ *                  description: Estado actual del pedido
+ *              id:
+ *                  type: string
+ *                  description: Id del pedido
+ *              usuario:
+ *                  type: object
+ *                  description: Datos basicos del usuario que realizo el pedido
  *              orden:
  *                  type: array
- *                  description: Precio en pesos colombianos de nuestro producto
+ *                  description: Productos, cantidad y precios de las ordenes realizadas
  *              precio_total:
  *                  type: number
- *                  description: asdf
+ *                  description: Precio todal de la orden
  *              direccion_Pedido:
- *                  type: number
- *                  description: Precio en pesos colombianos de nuestro producto
+ *                  type: object
+ *                  description: Datos de la direccion del usuario
  *              metodo_pago:
  *                  type: object
- *                  description: Precio en pesos colombianos de nuestro producto
+ *                  description: Metodo de pago seleccionado
  *          example:
- *              usuario: usuario1
- *              id_usuario: 1626319469087
- *              id_pedido: 999
- *              orden:
- *                  nombre: Botella de Cocacola
- *                  id: 96
- *                  precio: 2200
- *                  cantidad: 1
- *              precio_total: 2200
- *              direccion_Pedido: calle 1 #1-2
- *              estado_Pedido: Cerrado
- *              metodo_Pago:
- *                  medio: Efectivo
- *                  id: 1
+ *              {id: asd123, estado_pedido: "PENDIENTE", usuario: {id: asd123, email: "correoprueba@gmail.com", username: "usuario prueba", telefono: "3999123991"}, orden: [{id: asd123, nombre: "Pollo", precio: 5200, cantidad: 2}], precio_total: 10400, direccion_pedido: {id: asd123, direccion: "calle prueba #13-12"}, metodo_pago: {id: asd123, medio: "Nequi"}}
+ *              
  *          
  *      totalpedidos:
  *          type: object
  *          properties:
- *              usuario:
+ *              estado_pedido:
  *                  type: string
- *                  description: Nombre del producto
- *              id_usuario:
- *                  type: number
- *                  description: ID unico de nuestros productos
- *              id_pedido:
- *                  type: number
- *                  description: Precio en pesos colombianos de nuestro producto
+ *                  description: Estado actual del pedido
+ *              id:
+ *                  type: string
+ *                  description: Id del pedido
+ *              usuario:
+ *                  type: object
+ *                  description: Datos basicos del usuario que realizo el pedido
  *              orden:
  *                  type: array
- *                  description: Precio en pesos colombianos de nuestro producto
+ *                  description: Productos, cantidad y precios de las ordenes realizadas
  *              precio_total:
  *                  type: number
- *                  description: asdf
+ *                  description: Precio todal de la orden
  *              direccion_Pedido:
- *                  type: number
- *                  description: Precio en pesos colombianos de nuestro producto
+ *                  type: object
+ *                  description: Datos de la direccion del usuario
  *              metodo_pago:
  *                  type: object
- *                  description: Precio en pesos colombianos de nuestro producto
+ *                  description: Metodo de pago seleccionado
  *          example:
- *              usuario: usuario1
- *              id_usuario: 1626319469087
- *              id_pedido: 999
- *              orden:
- *                  nombre: Botella de Cocacola
- *                  id: 96
- *                  precio: 2200
- *                  cantidad: 1
- *              precio_total: 2200
- *              direccion_Pedido: calle 1 #1-2
- *              estado_Pedido: Cerrado
- *              metodo_Pago:
- *                  medio: Efectivo
- *                  id: 1
- *      makeorder:
+ *              {id: asd123, estado_pedido: "PENDIENTE", usuario: {id: asd123, email: "correoprueba@gmail.com", username: "usuario prueba", telefono: "3999123991"}, orden: [{id: asd123, nombre: "Pollo", precio: 5200, cantidad: 2}], precio_total: 10400, direccion_pedido: {id: asd123, direccion: "calle prueba #13-12"}, metodo_pago: {id: asd123, medio: "Nequi"}}
+ *      
+ *      realizarpedido:
  *          type: object
  *          required:
- *              - pedidos
- *              - idDepago
- *              - direccionDePedido 
+ *              - id_producto
+ *              - cantidad
+ *              - id_direccion
+ *              - id_metodo_pago 
  *          properties:
- *              pedidos:
- *                  type: array
- *                  description: array con ID del producto y cantidad del producto
- *                  id:
- *                      type: number
- *                      description: ID de producto a ordenar.
- *                  cantidad:
- *                      type: number
- *                      description: cantidad del producto que desea.
- *              idDepago:
- *                  type: number
- *                  description: ID del metodo de pago que se desea utilizar
- *              direccionDePedido:
+ *              id_producto:
  *                  type: string
- *                  description: Direccion del pedido
+ *                  description: Id del producto que se desea ordenar
+ *              cantidad:
+ *                  type: number
+ *                  description: Cantidad del producto que se desea ordenar
+ *              id_direcciones:
+ *                  type: number
+ *                  description: Id de la libreta de direcciones del usuario indicando la direccion del pedido
+ *              id_metodo_pago:
+ *                  type: string
+ *                  description: Id medio de pago disponibles.
  *          example:
- *              pedidos: [{id: 96, cantidad: 2}, {id: 200, cantidad: 1}]
- *              idDepago: 1
- *              direccionDePedido: carrera 20 #15-12
- *      edit_estageAdmin:
+ *              id_producto: "asd123"
+ *              cantidad: 5
+ *              id_direcciones: 199
+ *              id_metodo_pago: "asd123"
+ *     
+ *      editar_estado_admin:
  *          type: object
  *          required:
  *              - estado
  *          properties:
  *              estado:
  *                  type: string
- *                  description: Indico el estado al que quiero que pase el pedido del usuario.
- * 
- *                  estados posibles: En preparacion, enviado, cerrado.
+ *                  description: Indicar a que estado quiero que pase el pedido teniendo en cuenta los estados validos - CONFIRMADO, PENDIENTE, EN PREPARACION, ENTREGADO, CERRADO
  *          example:
- *              estado: "Enviado"
- *      
- *      editarProductoOrden:
+ *              estado: CONFIRMADO, PENDIENTE, EN PREPARACION, ENTREGADO, CERRADO
+ * 
+ *      editarCantidadProducto:
  *          type: object
  *          require:
- *              - pedidos
+ *              - idproducto
+ *              - cantidadproducto
  *          properties:
- *              pedidos:
- *                  type: object
- *                  description: Se ingresa el ID del producto al que se le desea modificar la cantidad en nuestra orden.
- *                  id:
- *                      type: number
- *                      description: ID del producto al cual le queremos modificar la cantidad en nuestra orden
- *                  cantidad:
- *                      type: number
- *                      description: La nueva cantidad que deseamos del producto indicado con ID
+ *              idproducto:
+ *                  type: string
+ *                  description: Id del producto al cual se le va a modificar la cantidad en el Pedido
+ *              cantidadproducto:
+ *                  type: number
+ *                  description: Cantidad final deseada
  *          example:
- *              pedidos: {"id": 96, "cantidad": 5}
+ *              pedidos:
+ *                  idproducto: asd123
+ *                  cantidadproducto: 5
  *      
  *      eliminarProductoDeOrden:
  *          type: object

@@ -10,7 +10,7 @@ const clienteRedis = redis.createClient(6379);
  * @swagger
  * /productos/listaproductos:
  *  get:
- *      summary: Obtener todos los productos disponibles
+ *      summary: Obtener todos los productos disponibles.
  *      tags: [PRODUCTOS]
  *      schema:
  *      responses:
@@ -33,7 +33,7 @@ router.get("/listaproductos", cache, async (req, res) => {
  * /productos/edicionproductos/{IdDeProducto}:
  *  put:
  *      summary: Edita el nombre y/o el precio de un producto ya creado.
- *      description: Edita el nombre y/o el precio de un producto ya creado por medio de su ID.
+ *      description: Edita el nombre y/o el precio de un producto ya creado por medio de su Id.
  *      tags: [PRODUCTOS]
  *      parameters:
  *        - in: path
@@ -41,7 +41,7 @@ router.get("/listaproductos", cache, async (req, res) => {
  *          required: true
  *          schema:
  *              type: number
- *              example: 96
+ *              example: asd123
  *      requestBody:
  *          required: true
  *          content:
@@ -49,28 +49,20 @@ router.get("/listaproductos", cache, async (req, res) => {
  *                  schema:
  *                      $ref: '#/components/schemas/editproduct'
  *      responses:
- *          200:
- *              description: El id de producto indicado no corresponde a ningun producto de la lista
- *              content:
- *                  text/plain:
- *                      schema:
- *                          type: string
- *                          example: El ID del producto a modificar no existe
- *          
  *          201:
- *              description: Se a modificado el producto indicado por ID exitosamente
+ *              description: Actualizacion de producto exitosa.
  *              content:
  *                  text/plain:
  *                      schema:
  *                          type: string
- *                          example: producto actualizado correctamente.
+ *                          example: "Producto actualizado Nombre: Pollo, Precio: 5200"          
  *          400:
- *              description: Se a enviado datos con tipo erroneo en el body - bad request
+ *              description: Posibles errores lanzados por la API por incidencias en la sintaxis y/o requisitos necesarios para realizar la solicitud.
  *              content:
  *                  text/plain:
  *                      schema:
  *                          type: string
- *                          example: El precio del producto debe ser un numero y el nombre del producto debe ser una string.
+ *                          example: Id de producto invalido - Precio invalido - Nombre de producto invalido
  */
 router.put("/edicionproductos/:id", esAdmin, async (req, res) => { //Actualizar un producto ya creado
     try {
@@ -97,37 +89,37 @@ router.put("/edicionproductos/:id", esAdmin, async (req, res) => { //Actualizar 
  * /productos/eliminarproductos/{IdDeProducto}:
  *  delete:
  *      summary: Eliminar un producto del sistema.
- *      description: eliminar un producto por medio de su ID.
+ *      description: eliminar un producto por medio de su id.
  *      tags: [PRODUCTOS]
  *      parameters:
  *        - in: path
  *          name: IdDeProducto
  *          required: true
  *          schema:
- *              type: number
- *              example: 96
+ *              type: string
+ *              example: asd123
  *      responses:
- *          200:
- *              description: El producto (nombre de producto) fue eliminado correctamente
+ *          201:
+ *              description: Eliminacion de producto exitosa.
  *              content:
  *                  text/plain:
  *                      schema:
  *                          type: string
- *                          example: El producto fue eliminado correctamente
- *          403:
- *              description: ID invalido
+ *                          example: Se elimino satisfactoriamente el producto CocaCola con el precio de 3200
+ *          400:
+ *              description: Posibles errores lanzados por la API por incidencias en la sintaxis y/o requisitos necesarios para realizar la solicitud.
  *              content:
  *                  text/plain:
  *                      schema:
  *                          type: string
- *                          example: El ID indicado no corresponde a ningun producto.
+ *                          example: Id de producto invalido - El id invalido del producto a eliminar es invalido.
  */
 router.delete("/eliminarproductos/:id", esAdmin, async (req, res) => { //Eliminar un producto de la lista
     try {
         const { id: _id } = req.params;
         const { nombre, precio } = await productoModelo.findByIdAndDelete({ _id });
         if (nombre == undefined) {
-            res.json("No se encontro el producto indicado por id");
+            res.json("Id de producto invalido");
         } else {
             clienteRedis.del('PRODUCTOS');
             res.status(201).json(`Se elimino satisfactoriamente el producto ${nombre} con el precio de ${precio}`)
@@ -142,36 +134,29 @@ router.delete("/eliminarproductos/:id", esAdmin, async (req, res) => { //Elimina
  * /productos/agregarproductos:
  *  post:
  *      summary: Ingresar un nuevo producto al sistema
- *      description: Ingresar los datos validos y necesarios para crear el producto
+ *      description: Ingresar un producto nuevo al sistema indicando su nombre y su precio.
  *      tags: [PRODUCTOS]
  *      requestBody:
  *          required: true
  *          content:
  *              application/json:
  *                  schema:
- *                      $ref: '#/components/schemas/newproduct'
+ *                      $ref: '#/components/schemas/agregarproductos'
  *      responses:
  *          201:
- *              description: Producto creado y agregado a la lista exitosamente
+ *              description: El producto Sandwitch de pollo apanado fue creado exitosamente
  *              content:
  *                  text/plain:
  *                      schema:
  *                          type: string
  *                          example: Producto creado exitosamente
- *          200:
- *              description: Este producto ya existe en nuestro sistema.
- *              content:
- *                  text/plain:
- *                      schema:
- *                          type: string
- *                          example: Este producto ya existe en nuestro sistema.
  *          400:
- *              description: Bad request - cuando el usuario ingresa un string en el campo de "precio" 
+ *              description: Posibles errores lanzados por la API por incidencias en la sintaxis y/o requisitos necesarios para realizar la solicitud. 
  *              content:
- *                  text/plain:
+ *                  json:
  *                      schema:
  *                          type: string
- *                          example: El nombre del producto debe ser un string y el precio un numero.
+ *                          example: El producto ya se encuentra registrado - Nombre de produco invalido - precio de producto invalido.
  *          
  */
 router.post("/agregarproductos", async (req, res) => { //Creando un producto nuevo
@@ -209,18 +194,19 @@ router.post("/agregarproductos", async (req, res) => { //Creando un producto nue
  *          properties:
  *              nombre:
  *                  type: string
- *                  description: Nombre del producto
+ *                  description: Nombre del producto.
  *              id:
- *                  type: number
- *                  description: ID unico de nuestros productos
+ *                  type: string
+ *                  description: Id unico del productos.
  *              precio:
  *                  type: number
- *                  description: Precio en pesos colombianos de nuestro producto
+ *                  description: Precio del producto.
  *          example:
- *              nombre: Botella de bebida gaseosa CocaCola
- *              id: 96
+ *              nombre: CocaCola
+ *              id: "asd123"
  *              precio: 2200
- *      newproduct:
+ * 
+ *      agregarproductos:
  *          type: object
  *          required:
  *              - nombre
@@ -231,7 +217,7 @@ router.post("/agregarproductos", async (req, res) => { //Creando un producto nue
  *                  description: Nombre del producto a crear.
  *              precio:
  *                  type: number
- *                  description: Precio en pesos del producto a crear
+ *                  description: Precio del producto a crear.
  *          example:
  *              nombre: Sandwitch de pollo apanado
  *              precio: 5500
@@ -244,15 +230,12 @@ router.post("/agregarproductos", async (req, res) => { //Creando un producto nue
  *          properties:
  *              nombre:
  *                  type: string
- *                  description: Nombre del producto a crear.
+ *                  description: Nombre del producto a actualizar.
  *              precio:
  *                  type: number
- *                  description: Precio en pesos del producto a crear
+ *                  description: Precio en pesos del producto actualizar.
  *          example:
- *              nombre: Ensalada de frutas con helado de brownie
- *              precio: 8000
- *      deleteproduct:
- *          type: object
- *          require:
+ *              nombre: Pollo
+ *              precio: 5300
  */
 module.exports = router;

@@ -13,6 +13,7 @@ const eliminarDireccionUsuario = require('../helpers/eliminarDireccion');
  * /usuarios/obtenerusuarios:
  *  get:
  *      summary: Obtener todos los usuarios registrados
+ *      description: Obtener todos los usuarios regitrados.
  *      tags: [USUARIOS]
  *      schema:
  *      responses:
@@ -35,8 +36,8 @@ router.get('/obtenerusuarios', esAdmin, async (req, res) => {
  * @swagger
  * /usuarios/ingresar:
  *  post:
- *      summary: ingresar al sistema
- *      description: Ingresar al sistema
+ *      summary: Ingresar al sistema
+ *      description: Hacer login con email y password previamente registrado
  *      tags: [USUARIOS]
  *      security: []
  *      requestBody:
@@ -44,16 +45,23 @@ router.get('/obtenerusuarios', esAdmin, async (req, res) => {
  *          content:
  *              application/json:
  *                  schema:
- *                      $ref: '#/components/schemas/login'  
+ *                      $ref: '#/components/schemas/login'
  *      responses:
- *          200:
- *              description: Respuesta de si su inicio de sesion fue exitoso o no.
+ *          201:
+ *              description: Inicio de sesion exitoso.
  *              content:
- *                  text/plain:
+ *                  aplication/json:
  *                      schema:
- *                          anyOf:
- *                              - $ref: '#/components/schemas/usuariologin'
- *                          
+ *                          type: string
+ *                          example: inicio de sesion exitoso.
+ *          401:
+ *              description: Uncauthorized.
+ *              content:
+ *                  aplication/json:
+ *                      schema:
+ *                          type: string
+ *                          example: Unauthorized.
+ * 
  */
 router.post("/ingresar", async (req, res) => {
     try {
@@ -71,10 +79,26 @@ router.post("/ingresar", async (req, res) => {
     }
 })
 
+/**
+ * @swagger
+ * /usuarios/micuenta:
+ *  get:
+ *      summary: Obtener los datos de mi cuenta.
+ *      description: Obtener los datos de mi cuenta logueada.
+ *      tags: [USUARIOS]
+ *      schema:
+ *      responses:
+ *          200:
+ *              description: Datos de mi logueada.
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          $ref: '#/components/schemas/micuenta'
+ */
 router.get('/micuenta', async (req, res) => {
     try {
         const { email } = req.user;
-        res.status(200).json(await usuarioModelo.find({ email }));
+        res.status(200).json(await usuarioModelo.findOne({ email }));
     } catch (err) {
         res.status(500).json("A OCURRIDO UN ERROR - 500 INTERNAL ERROR");
     };
@@ -85,7 +109,7 @@ router.get('/micuenta', async (req, res) => {
  * /usuarios/registrar:
  *  post:
  *      summary: Ingresar un nuevo usuario al sistema
- *      description: Ingresar datos para la creacion de un usuario nuevo
+ *      description: Ingresar datos para la creacion de un usuario nuevo.
  *      tags: [USUARIOS]
  *      security: []
  *      requestBody:
@@ -98,19 +122,18 @@ router.get('/micuenta', async (req, res) => {
  *          201:
  *              description: Usuario creado exitosamente
  *              content:
- *                  text/plain:
+ *                  aplication/json:
  *                      schema:
  *                          type: string
- *                          example: Usuario creado exitosamente.
- *          200:
- *              description: El correo diligenciado ya existe en nuestro sistema
+ *                          example: "USUARIO CREADO Username: username prueba Email: correoprueba123@gmail.com"
+ *          400:
+ *              description: Posibles errores lanzados por la API por error en la sintaxis y/o requisitos para hacer un registo exitoso.
  *              content:
- *                  text/plain:
+ *                  aplication/json:
  *                      schema:
  *                          type: string
- *                          example: Este correo ya existe en nuestro sistema.
- *                      
- */
+ *                          example: El email ya se encuentra registrado - correo invalido - username invalido - username debe tener una logitud minima - caracteres no permitidos en la password.
+ */             
 router.post("/registrar", async (req, res) => {
     try {
         const { email, username, password, telefono, direccion } = await usuarioValidation.validateAsync(req.body);
@@ -145,26 +168,91 @@ router.post("/registrar", async (req, res) => {
 });
 
 
+/**
+ * @swagger
+ * /aggdireccion/{idDeUsuario}:
+ *  post:
+ *      summary: Ingresar una nueva direccion a la libreta
+ *      description: Ingresar una nueva direccion a la libreta del usuario previamente registrado.
+ *      tags: [USUARIOS]
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/aggdireccion'
+ *      responses:
+ *          201:
+ *              description: Direccion creada exitosamente
+ *              content:
+ *                  aplication/json:
+ *                      schema:
+ *                          type: object
+ *                          example: {direccion: "calle nueva #12-12, id: 1234"}
+ *          400:
+ *              description: Posibles errores lanzados por la API por incidencias en la sintaxis y/o requisitos necesarios para realizar la solicitud. 
+ *              content:
+ *                  aplication/json:
+ *                      schema:
+ *                          type: string
+ *                          example: Id de usuario invalido.
+ */             
 
 router.post("/aggdireccion/:id", async (req, res) => {
     try {
-        const { id: _id } = req.params;
+        const { email } = req.user;
         const nuevaDireccion = req.body;
-        const user = await usuarioModelo.findById({ _id });
+        const user = await usuarioModelo.findOne({ email });
+        if (user == null){
+            res.status(400).json('Id de usuario invalido');
+        } else {
         nuevaDireccion.id = Math.floor((Math.random() * (300 - 100 + 1)) + 100);
         user.direccion.push(nuevaDireccion);
         await user.save();
         res.json(nuevaDireccion);
+    };
     } catch (err) {
         res.status(500).json("INTERNAL SERVER ERROR_500")
     }
 });
 
+/**
+ * @swagger
+ * /deldireccion/{idDeUsuario}:
+ *  delete:
+ *      summary: Eliminar una direccion a la libreta del usuario
+ *      description: Eliminar direccion registrada en la libreta del usuario.
+ *      tags: [USUARIOS]
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      $ref: '#/components/schemas/deldireccion'
+ *      responses:
+ *          201:
+ *              description: Direccion eliminada exitosamente
+ *              content:
+ *                  aplication/json:
+ *                      schema:
+ *                          type: string
+ *                          example: Direccion eliminada.
+ *          400:
+ *              description: Posibles errores lanzados por la API por incidencias en la sintaxis y/o requisitos necesarios para realizar la solicitud. 
+ *              content:
+ *                  aplication/json:
+ *                      schema:
+ *                          type: string
+ *                          example: Id de usuario invalido - No hallamos el id en la lista de direcciones.
+ */
 router.delete("/deldireccion/:id", async (req, res) => {
     try {
-        const { id: _id } = req.params;
+        const { email } = req.user;
         const { id } = req.body;
-        const user = await usuarioModelo.findById({ _id });
+        const user = await usuarioModelo.findById({ email });
+        if (user == null){
+            res.status(400).json('Id de usuario invalido');
+        } else {
         const verificacion = eliminarDireccionUsuario(user.direccion, id);
         if (verificacion != false) {
             await user.save();
@@ -172,7 +260,7 @@ router.delete("/deldireccion/:id", async (req, res) => {
         } else {
             res.json("No hallamos el id en la lista de direcciones");
         };
-    } catch (err) {
+    }} catch (err) {
         res.json("INTERNAL SERVER ERR0R_500");
     };
 });
@@ -185,13 +273,34 @@ router.delete("/deldireccion/:id", async (req, res) => {
  * 
  * components:
  *  schemas:
+ *      deldireccion:
+ *          type: object
+ *          require:
+ *              - id
+ *          properties:
+ *              id:
+ *                  type: number
+ *                  description: Id de la direccion a eliminar.
+ *      aggdireccion:
+ *          type: object
+ *          require:
+ *              - nuevaDireccion
+ *          properties:
+ *              nuevaDireccion:
+ *                  type: string
+ *                  description: Nueva direccion a agregar a la libreta de direcciones del usuario.
  *      usuariologin:
- *          type: string
- *          example:
- *              Inicio de sesion exitoso.
- * 
- * 
- *              Inicio de sesion NO exitoso.
+ *          type: object
+ *          require:
+ *              -email
+ *              -password
+ *          properties:
+ *              email:
+ *                  type: string
+ *                  description: Email del usuario.
+ *              password:
+ *                  type: string
+ *                  description: Password del usuario.    
  *      obtenerusuarios:
  *          type: object
  *          require:
@@ -202,36 +311,86 @@ router.delete("/deldireccion/:id", async (req, res) => {
  *              -telefono
  *              -direccion
  *              -id
+ *              -estado
+ *          properties:
+ *              email:
+ *                  type: string
+ *                  description: Email del usuario.
+ *              username:
+ *                  type: string
+ *                  description: Username del usuario.
+ *              password:
+ *                  type: string
+ *                  description: Password del usuario.
+ *              isAdmin:
+ *                  type: boolean
+ *                  description: Tiene permisos de administrador TRUE/FALSE.
+ *              telefono:
+ *                  type: integer
+ *                  description: Telefono del usuario.
+ *              direccion:
+ *                  type: array
+ *                  description: Libreta de direcciones del usuario.
+ *              id:
+ *                  type: string
+ *                  description: Id unico del usuario.
+ *              estado:
+ *                  type: boolean
+ *                  description: La cuenta esta en estado activa o suspendida.
+ *          example:
+ *              email: correoprueba123@gmail.com
+ *              username: username prueba
+ *              password: passencriptada
+ *              isAdmin: false
+ *              telefono: 3999999919
+ *              direccion: [{direccion: "calle prueba #9-99"}]
+ *              id: da7s8dhasiausfn7823f
+ *              estado: true
+ *      micuenta:
+ *          type: object
+ *          require:
+ *              -email
+ *              -username
+ *              -password
+ *              -isAdmin
+ *              -telefono
+ *              -direccion
+ *              -id
+ *              -estado
  *          properties:
  *              email:
  *                  type: string
  *                  description: Email del usuario
  *              username:
  *                  type: string
- *                  description: Apodo del usuario
+ *                  description: Username del usuario.
  *              password:
  *                  type: string
- *                  description: Password de acceso del usuario
+ *                  description: Password del usuario.
  *              isAdmin:
  *                  type: boolean
- *                  description: Si es o no usuario administrador
+ *                  description: Tiene permisos de administrador TRUE/FALSE.
  *              telefono:
  *                  type: integer
- *                  description: Telefono del usuario
+ *                  description: Telefono del usuario.
  *              direccion:
- *                  type: string
- *                  description: Direccion del usuario
+ *                  type: array
+ *                  description: Libreta de direcciones del usuario.
  *              id:
- *                  type: integer
- *                  description: Id unico del usuario
+ *                  type: string
+ *                  description: Id unico del usuario.
+ *              estado:
+ *                  type: boolean
+ *                  description: La cuenta esta en estado activa o suspendida.
  *          example:
- *              email: emailDeEjemplo@ejemplo.com
- *              username: usernameDeEjemplo
- *              password: passDeEjemplo
- *              isAdmin: Ejemplo-false
- *              telefono: ejemplo-31111112
- *              direccion: direccionDeEjemplo
- *              id: IdUnicoDeEjemplo
+ *              email: correoprueba123@gmail.com
+ *              username: username prueba
+ *              password: passEncriptada
+ *              isAdmin: false
+ *              telefono: 3999999919
+ *              direccion: [{direccion: "calle prueba #9-99"}]
+ *              id: da7s8dhasiausfn7823f
+ *              estado: true
  *      login:
  *          type: object
  *          required:
@@ -240,44 +399,48 @@ router.delete("/deldireccion/:id", async (req, res) => {
  *          properties:
  *              email:
  *                  type: string
- *                  description: Email del usuario
+ *                  description: Email del usuario.
  *              password:
  *                  type: string
- *                  description: Password del usuario
+ *                  description: Password del usuario.
  *          example:
- *              email: correo1@gmail.com
- *              password: "12345"
- * 
+ *              email: correoprueba123@gmail.com
+ *              password: "passwordsecreto"
  *      register:
  *          type: object
  *          required:
  *              - email
  *              - username
  *              - password
+ *              - confirm_password
  *              - telefono
  *              - direccion
  *          properties:
  *              email:
  *                  type: string
- *                  description: email del nuevo usuario
+ *                  description: email del usuario nuevo.
  *              username:
  *                  type: string
- *                  description: Username o apodo de identificacion del nuevo usuario
+ *                  description: Username del usuario nuevo.
  *              password:
  *                  type: string
- *                  description: Clave de inicio de sesion del nuevo usuario
+ *                  description: Password del usuario nuevo.
+ *              confirm_password:
+ *                  type: string
+ *                  description: Confirmacion del password del usuario nuevo.
  *              telefono:
  *                  type: number
- *                  description: Numero de telefono del nuevo usuario
+ *                  description: Numero de telefono usuario nuevo
  *              direccion:
  *                  type: string
- *                  description: Direccion del usuario a nuevo crear
+ *                  description: Direccion del usuario nuevo.
  *          example:
- *              email: "correo2@gmail.com"
- *              username: "usuario2"
- *              password: "soydos"
- *              telefono: 3125567282
- *              direccion: "calle 20 #15-sur"
+ *              email: "correoprueba123@gmail.com"
+ *              username: "username prueba"
+ *              password: "passwordsecreto"
+ *              confirm_password: "passwordsecreto"
+ *              telefono: "3129999919"
+ *              direccion: [{direccion: "calle prueba #9-99"}]
  *                  
  */
 module.exports = router;
