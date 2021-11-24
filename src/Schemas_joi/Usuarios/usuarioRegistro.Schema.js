@@ -44,6 +44,8 @@ const usuarioValidation = joi.object().keys({
                         "array.base": `Se debe ingresar una direccion valida`,
                         "array.empty": `La direccion es requerida`,
                 }),
+        isAdmin: joi
+                .boolean()
 });
 
 module.exports = usuarioValidation;
