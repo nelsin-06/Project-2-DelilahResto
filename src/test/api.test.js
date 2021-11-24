@@ -1,5 +1,6 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
+const jsonwebtoken = require('jsonwebtoken');
 
 const usuarioModelo = require('../models/usuario.model');
 const app = require('../index');
@@ -363,25 +364,3 @@ describe('REGISTRO DE USUARIO', () => {
     });
 
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
