@@ -1,37 +1,32 @@
-const helmet = require("helmet");
-const configJWT = require('./utils/config.JWT')
 require('dotenv').config();
-
+const {configSwaggerServer, configSwaggerSetup, configSwaggerSpecs} = require('./utils/swaggerconfig');
+const helmet = require("helmet");
+const msgErrorjwt = require("./middlewares/msgErrorJWT");
+const configJWT = require('./middlewares/config.JWT')
 const express = require('express');
 const app = express();
-
 app.use(helmet());
 app.use(express.json());
+const estadoUser = require('./middlewares/usuarioSuspendido');
 
 require("./database");
 
 const PORT = process.env.PORT || 3020;
 
-const swaggerOptions = require("./utils/swaggerOptions");
-const swaggerJsDoc = require('swagger-jsdoc');
-const swaggerUI = require('swagger-ui-express');
-const swaggerSpecs = swaggerJsDoc(swaggerOptions);
-app.use('/swagger', swaggerUI.serve, swaggerUI.setup(swaggerSpecs));
+app.use('/swagger', configSwaggerServer, configSwaggerSetup(configSwaggerSpecs));
 
 app.use(configJWT());
+app.use(msgErrorjwt);
 
 const rutasUsuarios = require("./route/usuarios.route");
 const rutasProductos = require("./route/productos.route");
 const rutasPedidos = require("./route/pedidos.route");
 const rutasPagos = require("./route/metodosdepago.route");
 
-app.use('/metodopagos', rutasPagos);
+app.use('/metodopagos', estadoUser, rutasPagos);
 app.use('/usuarios', rutasUsuarios);
-app.use('/productos', rutasProductos);
-app.use('/pedidos', rutasPedidos);
-
-const msgErrorjwt = require("./middlewares/msgErrorJWT");
-app.use(msgErrorjwt);
+app.use('/productos', estadoUser,rutasProductos);
+app.use('/pedidos', estadoUser,rutasPedidos);
 
 app.listen(PORT, () => { console.log("index iniciado en el puerto: " + PORT); });
 

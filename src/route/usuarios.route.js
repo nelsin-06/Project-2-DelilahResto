@@ -7,6 +7,7 @@ const JWT = require("jsonwebtoken");
 const esAdmin = require('../middlewares/esAdmin');
 const { encryptPassword, matchPassword } = require('../helpers/bcrypt.methods');
 const eliminarDireccionUsuario = require('../helpers/eliminarDireccion');
+const estadoUser = require('../middlewares/usuarioSuspendido');
 
 /**
  * @swagger
@@ -24,7 +25,7 @@ const eliminarDireccionUsuario = require('../helpers/eliminarDireccion');
  *                      schema:
  *                          $ref: '#/components/schemas/obtenerusuarios'
  */
-router.get('/obtenerusuarios', esAdmin, async (req, res) => {
+router.get('/obtenerusuarios', estadoUser, esAdmin, async (req, res) => {
     try {
         res.json(await usuarioModelo.find());
     } catch (err) {
@@ -198,7 +199,7 @@ router.post("/registrar", async (req, res) => {
  *                          example: Id de usuario invalido.
  */             
 
-router.post("/aggdireccion", async (req, res) => {
+router.post("/aggdireccion", estadoUser, async (req, res) => {
     try {
         const { email } = req.user;
         const nuevaDireccion = req.body;
@@ -245,7 +246,7 @@ router.post("/aggdireccion", async (req, res) => {
  *                          type: string
  *                          example: Id de usuario invalido - No hallamos el id en la lista de direcciones.
  */
-router.delete("/deldireccion", async (req, res) => {
+router.delete("/deldireccion", estadoUser, async (req, res) => {
     try {
         const { email } = req.user;
         const { id } = req.body;
@@ -302,7 +303,7 @@ router.delete("/deldireccion", async (req, res) => {
  *                          type: string
  *                          example: Id de usuario invalido - Solo se admite estado de usuario true o false
  */
-router.post('/cambiarestado/:id', async (req, res) => {
+router.post('/cambiarestado/:id', estadoUser, esAdmin,async (req, res) => {
     const { id: _id } = req.params;
     const { estadousuario } = req.body;
     await usuarioModelo.findByIdAndUpdate({ _id }, {"estado": estadousuario} ,(err, dato) => {if (dato) {return res.status(201).json('Se modifico el estado del usuario')
