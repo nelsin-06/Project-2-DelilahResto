@@ -263,7 +263,6 @@ router.delete("/deldireccion", estadoUser, async (req, res) => {
         };
     }} catch (err) {
         res.json("INTERNAL SERVER ERR0R_500");
-        console.log()
     };
 });
 
