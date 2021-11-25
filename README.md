@@ -1,6 +1,8 @@
 # ACAMICA SRPINT-PROJETS-2
 
 El sprint-projects-2 de acamica nos proponen realizar una API/REST para un restaurante en las cuales necesitamos cubrir rutas de usuarios(Registro, login y modificacion), productos(Creacion, eliminacion, modificacion y accion de listar), pedidos(Creacion, modificacion, eliminacion y verificion de requisitos antes de realizar nuevas acciones en la pestaña de pedidos) y metodos de pago(Creacion, eliminacion, modificacion y accion de listar).
+Cuenta con una capa de cache(Redis), una capa de seguridad(JWT), una capa de seguridad de la API(helmet), y una rutina de test(Mocha y Chai) y bases de dato "Mongo".
+Variable de entorno implementadas en "Dotenv"
 
 # PROYECTO 🌎
 
