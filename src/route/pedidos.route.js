@@ -13,6 +13,7 @@ const usuarioModelo = require('../models/usuario.model');
 const productoModelo = require('../models/producto.model');
 const estadoCerrado = require('../middlewares/estadoCerrado');
 const esAdmin = require('../middlewares/esAdmin');
+const estadoPendiente = require('../middlewares/estadoPendiente');
 
 /**
  * @swagger
@@ -276,7 +277,7 @@ router.get("/estado/:idpedido", async (req, res) => { //CAMBIAR ESTADO DEL PEDID
  *          
  */
 
-router.put("/editarpedido/:idpedido", async (req, res) => { // MODIFICAR LA CANTIDAD DE UN PRODUCTO EN NUESTRO PEDIDO
+router.put("/editarpedido/:idpedido", estadoPendiente, async (req, res) => { // MODIFICAR LA CANTIDAD DE UN PRODUCTO EN NUESTRO PEDIDO
     try {
         const { idpedido: _id } = req.params;
         const { idproducto, cantidadproducto } = await pedidoEditValidation.validateAsync(req.body);
@@ -340,7 +341,7 @@ router.put("/editarpedido/:idpedido", async (req, res) => { // MODIFICAR LA CANT
  *                          example: No hallamos el producto en el pedido - ingrese un Id de pedido valido
  *          
  */
-router.delete("/editarpedido/:idpedido", async (req, res) => { //ELIMINAR PRODUCTOS DE UN PEDIDO.
+router.delete("/editarpedido/:idpedido", estadoPendiente, async (req, res) => { //ELIMINAR PRODUCTOS DE UN PEDIDO.
     try {
         const { idpedido: _id  } = req.params;
         const { idproducto } = await pedidoDelValidacion.validateAsync(req.body);
@@ -404,7 +405,7 @@ router.delete("/editarpedido/:idpedido", async (req, res) => { //ELIMINAR PRODUC
  *  
  *
  */
-router.post("/editarpedido/:idPedido", async (req, res) => { //AGREGAR PRODUCTOS NUEVOS A PEDIDO.
+router.post("/editarpedido/:idPedido", estadoPendiente, async (req, res) => { //AGREGAR PRODUCTOS NUEVOS A PEDIDO.
     try {
         const { idPedido: _id } = req.params;
         const { idproducto, cantidadproducto: cantidad } = await pedidoEditValidation.validateAsync(req.body);
@@ -527,7 +528,7 @@ router.post("/editarpedido/:idPedido", async (req, res) => { //AGREGAR PRODUCTOS
  *          example:
  *              id_producto: "asd123"
  *              cantidad: "5"
- *              id_direccion: 199
+ *              id_direccion: 999
  *              id_metodo_pago: "asd123"
  *     
  *      editar_estado_admin:
