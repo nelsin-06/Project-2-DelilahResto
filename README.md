@@ -67,17 +67,18 @@ El metodo de pago es valido para agregar al pedido.
 
 ## Instrucciones 📚
 
-Para que la experiencia y entendimiento correcto de la API se debe tener en cuenta:
+Para que la experiencia sea más agradable y entender correctamente la API se debe tener en cuenta:
 
 1. El usuario no podrá realizar un nuevo pedido mientras tenga un pedido activo(Todos los pedidos del usuario deben estar en estado "CERRADO").
-2. El usuario no podrá modificar opciones de su pedido después de que este a pasado a estado "CONFIRMADO".
+2. El usuario no podrá modificar opciones de su pedido después de que este a pasado a un estado diferente de  "PENDIENTE". Si el pedido pasa a estado "CONFIRMADO" u otro no sera efectiva ninguna modificación.
 3. Para que la función de caché de nuestra API sea más perceptible, en el primer llamado a nuestra lista de productos hay un tiempo de respuesta de 3 segundos si este no se ha almacenado en caché.
 4. La caché de la lista de productos tiene un tiempo de expiración de 1 minuto.
 5. La caché se limpia seguidamente de cada modificación en las rutas de productos(Solo se limpia, pero no se actualiza).
 6. Los únicos estados de pedidos admitidos son: PENDIENTE, CONFIRMADO, EN PREPARACIÓN, ENTREGADO y CERRADO. El estado del pedido se debe ingresar en mayúscula.
 7. Los usuarios tienen un "ESTADO". El cual nos indica si la cuenta esta activa(True) o se encuentra suspendida(False).
 8. Todos los datos que se ingresen en cada una de las rutas tiene validaciones como de sintaxis o si el campo está vacío.
-9. Algunos datos no pueden estar duplicados por lo que también existen validaciones para esto
+9. Algunos datos no pueden estar duplicados por lo que también existen validaciones para esto.
+10. Al iniciar sesion se respondera con un "Token", el cual utilizaremos para iniciar sesion en swagger.(Se debe copiar el contenido del token sin comillas u otros string que no sea exclusivamente el del token en la casilla de autenticacion del swagger).
 
 ## Funcionamiento 📈
 
