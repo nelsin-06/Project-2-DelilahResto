@@ -12,16 +12,16 @@ Acontinuación se darán las instrucciones generales para la instalación e inic
 ### Pre-requisitos 🗒️
 
  1. Node instalado en el equipo con el cual crearemos nuestro entorno de ejecución.
- 2. Base de datos mongo instalada y corriendo en el equipo de prueba.
+ 2. Base de datos mongo instalada y corriendo en el equipo de prueba.(No es necesario crear bases de datos, colecciones o documentos con informacion especifica ya que el codigo hara esto automaticamente, Solo se necesita el servicio de mongo activo y corriendo cuando se ejecute el codigo)
  3. Gestor de caché "redis" instalado y corriendo en el equipo en el puerto "6379" (Esto si se desea ver el efecto del almacenamiento cache. Si por preferencia lo tiene en otro puerto modificar las variables de entorno de nuestra API en su fichero".env").
  4. Por cuestiones prácticas añadimos el fichero .env a nuestro repositorio con las configuraciones de variables de entorno, si por preferencia o si su equipo no le permite iniciar la API con las configuraciones genéricas por favor modifique nuestro .env.
  5. Editor de código de preferencia.
  6. Navegador web de preferencia(Para las pruebas desde swagger).
 
  ### Instalación ✔️
-Después de que descargamos el código y de estar montado en el editor de código instalaremos sus dependencias/librerías de la siguiente forma:
+Después de que descargamos el código y de estar montado en el editor de código instalaremos sus dependencias/librerías de la siguiente forma. Sera un proceso exitoso si tenemos previamente instalado NODE en el equipo:
 	
-    npm init
+    npm install
 
 Iniciamos nuestra API con **"npm start"**.Con este comando nuestra API empezara a correr y si su inicio fue exitoso en la línea de consola nos indicara el puerto en el cual se inició y un mensaje de confirmación de conexión con la base de datos.
 
