@@ -34,7 +34,7 @@ Para que la prueba se haga mas practica se creo una rutina de creacion de un usu
 
 ### metodos de pago
 
-## Instrucciones
+## Instrucciones 📚
 
 Para que la experiencia y entendimiento correcto de la API se debe tener en cuenta:
 
@@ -48,7 +48,7 @@ Para que la experiencia y entendimiento correcto de la API se debe tener en cuen
 8. Todos los datos que se ingresen en cada una de las rutas tiene validaciones como de sintaxis o si el campo esta vacio.
 9. Algunos datos no pueden estar duplicados por lo que tambien existen validaciones para esto.
 
-## Funcionamiento
+## Funcionamiento 📈
 
 Acontinuacion se explicara de manera general el funcionamiento de las rutas de nuestra API, si necesita autentifición y/o permisos de administrador.
 
@@ -106,13 +106,13 @@ Acontinuacion se explicara de manera general el funcionamiento de las rutas de n
 
 /editarpedido = Ruta en donde podremos agregar un nuevo pedido a nuestra orden.(auth: SI, Admin: NO)
 
-## Ejecucion de pruebas
+## Ejecucion de pruebas ⚙️
 
 Para realizar las pruebas se utiliza el ambiente grafico SWAGGER, se puede acceder desde el siguiente [LINK](http://localhost:3000/swagger) o ingresando a su navegador de preferencia y llendo a la ruta "http://localhost:3000/swagger"
 
 Si el puerto de inicio de NODE es diferente a "3000" tambien se debe modificar en la ruta al swagger.
 
-## Ejecucion de test
+## Ejecucion de test 🧪
 
 Este test esta dirigido a las posibles respuesta positivas o negativas que podria recibir la ruta de "REGISTRO DE USUARIOS". 
 Podemos ejecutar el test de la siguiente forma:
@@ -138,5 +138,4 @@ Podemos ejecutar el test de la siguiente forma:
 
 **Nelson Stiven Gallego Garcia**
 **nelsoncg0611@gmail.com**
-
-## Construcción en proceso...
+**https://www.linkedin.com/in/nelson-gallego-tec-dev**
