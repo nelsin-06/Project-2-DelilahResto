@@ -79,7 +79,7 @@ Para que la experiencia sea más agradable y entender correctamente la API se de
 8. Todos los datos que se ingresen en cada una de las rutas tiene validaciones como de sintaxis o si el campo está vacío.
 9. Algunos datos no pueden estar duplicados por lo que también existen validaciones para esto.
 10. Al iniciar sesion se respondera con un "Token", el cual utilizaremos para iniciar sesion en swagger.(Se debe copiar el contenido del token sin comillas u otros string que no sea exclusivamente el del token en la casilla de autenticacion del swagger).
-11. Podemos iniciar sesion con las siguientes credenciales: email : correo1@gmail.com - password : passwordsecreto
+11. Podemos iniciar sesion con las siguientes credenciales: email : correo1@gmail.com - password : passwordsecreto.
 
 ## Funcionamiento 📈
 
