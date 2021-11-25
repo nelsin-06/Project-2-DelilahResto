@@ -28,13 +28,41 @@ Iniciamos nuestra API con **"npm start"**. Con este comando nuestra API empezara
 
 ## Datos pre-creados para pruebas 🗂️
 
-Para que la prueba se haga mas practica se creo una rutina de creacion de un usuario con permisos de administrador, un producto general y un metodo de pago general con los que se pueden realizar test.
+Para que la prueba se haga mas practica se creo una rutina de creacion de un usuario con permisos de administrador, un producto general y un metodo de pago general con los que se pueden realizar las pruebas. Los datos de los documentos creados por default son los siguientes:
 
 ### usuarios
 
+ "isAdmin" : true
+ 
+ "direccion" : [{"direccion" : "direccion 1 #1-2"}]
+ 
+ "estado" : true,
+ 
+ "email" : "correo1@gmail.com"
+ 
+ "username" : "correo uno dos"
+ 
+ "password" : "passwordsecreto"
+ 
+ "telefono" : 3991234568
+
+El usuario anterior se crea por default cuando hay una conexion exitosa con la base de datos.
+El usuario tambien es valido para iniciar sesion.
 ### productos
 
+"nombre" : "carne asada"
+
+"precio" : 10000
+
+El producto anterior se crea por default cuando hay una conexion exitosa con la base de datos.
+El producto es valido para agregar al pedido.
+
 ### metodos de pago
+
+"medio" : "nequi"
+
+El metodo de pago anterior crea por default cuando hay una conexion exitosa con la base de datos.
+El metodo de pago es valido para agregar al pedido.
 
 ## Instrucciones 📚
 
