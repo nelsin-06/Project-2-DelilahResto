@@ -144,6 +144,8 @@ Para realizar las pruebas se utiliza el ambiente gráfico SWAGGER, se�
 
 Si el puerto de inicio de NODE es diferente a "3000" también se debe modificar en la ruta al swagger.
 
+El acceso a la pagina de pruebas dependera de si el comando "npm start" se haya ejecutado.
+
 ## Ejecucion de test 🧪
 
 Este test está dirigido a las posibles respuestas positivas o negativas que podría recibir la ruta de "REGISTRO DE USUARIOS". 
