@@ -13,7 +13,7 @@ const estadoUser = require('../middlewares/usuarioSuspendido');
  * @swagger
  * /usuarios/obtenerusuarios:
  *  get:
- *      summary: Obtener todos los usuarios registrados
+ *      summary: Obtener todos los usuarios registrados (ADMIN)
  *      description: Obtener todos los usuarios regitrados.
  *      tags: [USUARIOS]
  *      schema:
@@ -271,7 +271,7 @@ router.delete("/deldireccion", estadoUser, async (req, res) => {
  * @swagger
  * /usuarios/cambiarestado/{IdDeUsuario}:
  *  post:
- *      summary: Eliminar una direccion a la libreta del usuario
+ *      summary: Eliminar una direccion a la libreta del usuario (ADMIN)
  *      description: Eliminar direccion registrada en la libreta del usuario.
  *      tags: [USUARIOS]
  *      parameters:

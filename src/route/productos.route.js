@@ -4,7 +4,10 @@ const validationProduct = require('../Schemas_joi/Productos/producto.Schema');
 const esAdmin = require('../middlewares/esAdmin');
 const cache = require('../middlewares/cache.productos');
 const redis = require('redis');
-const clienteRedis = redis.createClient(6379);
+let puertoRedis = process.env.PUERTO_REDIS;
+puertoRedis = parseInt(puertoRedis)
+console.log(puertoRedis);
+const clienteRedis = redis.createClient(puertoRedis);
 
 /**
  * @swagger
@@ -24,8 +27,8 @@ const clienteRedis = redis.createClient(6379);
 
 router.get("/listaproductos", cache, async (req, res) => {
     const productos = await productoModelo.find();
-    clienteRedis.setex('PRODUCTOS', 20, JSON.stringify(productos));
-    setTimeout(() => { res.json(productos); }, 4000);
+    clienteRedis.setex('PRODUCTOS', 60, JSON.stringify(productos));
+    setTimeout(() => { res.json(productos); }, 3000);
 });
 
 /**

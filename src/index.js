@@ -23,11 +23,14 @@ const rutasProductos = require("./route/productos.route");
 const rutasPedidos = require("./route/pedidos.route");
 const rutasPagos = require("./route/metodosdepago.route");
 
-app.use('/metodopagos', estadoUser, rutasPagos);
+app.use('/metodopagos', estadoUser,rutasPagos);
 app.use('/usuarios', rutasUsuarios);
-app.use('/productos', estadoUser,rutasProductos);
-app.use('/pedidos', estadoUser,rutasPedidos);
+app.use('/productos', estadoUser, rutasProductos);
+app.use('/pedidos', estadoUser, rutasPedidos);
+
 
 app.listen(PORT, () => { console.log("index iniciado en el puerto: " + PORT); });
 
 module.exports = app;
+
+// ⛩️⚙️💻⛩️
