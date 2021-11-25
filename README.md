@@ -12,16 +12,16 @@ Acontinuación se darán las instrucciones generales para la instalación e inic
 ### Pre-requisitos 🗒️
 
  1. Node instalado en el equipo con el cual crearemos nuestro entorno de ejecución.
- 2. Base de datos mongo instalada y corriendo en el equipo de prueba.
+ 2. Base de datos mongo instalada y corriendo en el equipo de prueba.(No es necesario crear bases de datos, colecciones o documentos con informacion especifica ya que el codigo hara esto automaticamente, solo se necesita el servicio de mongo activo y corriendo cuando se ejecute el codigo)
  3. Gestor de caché "redis" instalado y corriendo en el equipo en el puerto "6379" (Esto si se desea ver el efecto del almacenamiento cache. Si por preferencia lo tiene en otro puerto modificar las variables de entorno de nuestra API en su fichero".env").
  4. Por cuestiones prácticas añadimos el fichero .env a nuestro repositorio con las configuraciones de variables de entorno, si por preferencia o si su equipo no le permite iniciar la API con las configuraciones genéricas por favor modifique nuestro .env.
  5. Editor de código de preferencia.
  6. Navegador web de preferencia(Para las pruebas desde swagger).
 
  ### Instalación ✔️
-Después de que descargamos el código y de estar montado en el editor de código instalaremos sus dependencias/librerías de la siguiente forma:
+Después de que descargamos el código y de estar montado en el editor de código instalaremos sus dependencias/librerías de la siguiente forma. Sera un proceso exitoso si tenemos previamente instalado NODE en el equipo:
 	
-    npm init
+    npm install
 
 Iniciamos nuestra API con **"npm start"**.Con este comando nuestra API empezara a correr y si su inicio fue exitoso en la línea de consola nos indicara el puerto en el cual se inició y un mensaje de confirmación de conexión con la base de datos.
 
@@ -35,7 +35,7 @@ Para que la prueba se haga más práctica se creó una rutina de cr
 
  "isAdmin" : true
  
- "direccion" : [{"direccion" : "direccion 1 #1-2"}]
+ "direccion" : [{"direccion" : "direccion 1 #1-2", id: 999}]
  
  "estado" : true,
  
@@ -79,6 +79,7 @@ Para que la experiencia sea más agradable y entender correctamente la API se de
 8. Todos los datos que se ingresen en cada una de las rutas tiene validaciones como de sintaxis o si el campo está vacío.
 9. Algunos datos no pueden estar duplicados por lo que también existen validaciones para esto.
 10. Al iniciar sesion se respondera con un "Token", el cual utilizaremos para iniciar sesion en swagger.(Se debe copiar el contenido del token sin comillas u otros string que no sea exclusivamente el del token en la casilla de autenticacion del swagger).
+11. Podemos iniciar sesion con las siguientes credenciales: email : correo1@gmail.com - password : passwordsecreto
 
 ## Funcionamiento 📈
 
@@ -143,6 +144,8 @@ Continuación se explicará de manera general el funcionamiento de las�
 Para realizar las pruebas se utiliza el ambiente gráfico SWAGGER, se puede acceder desde el siguiente [LINK](http://localhost:3000/swagger) o ingresando a su navegador de preferencia y yendo a la ruta "http://localhost:3000/swagger"
 
 Si el puerto de inicio de NODE es diferente a "3000" también se debe modificar en la ruta al swagger.
+
+El acceso a la pagina de pruebas dependera de si el comando "npm start" se haya ejecutado.
 
 ## Ejecucion de test 🧪
 
