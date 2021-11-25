@@ -459,7 +459,7 @@ router.post('/cambiarestado/:id', estadoUser, esAdmin,async (req, res) => {
  *                  type: string
  *                  description: Password del usuario.
  *          example:
- *              email: correoprueba123@gmail.com
+ *              email: "correo1@gmail.com"
  *              password: "passwordsecreto"
  *      register:
  *          type: object
